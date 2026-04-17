@@ -21,11 +21,11 @@
         }
 
         .status-dot { height: 7px; width: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .dashboard-card { height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; transition: all 0.2s ease; }
+        .dashboard-card { height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; transition: all 0.2s ease; z-index: 10; }
         
         #mainSearch { outline: none !important; box-shadow: none !important; border: none !important; background-color: transparent !important; color: white !important; }
-        
-        /* Footer Help Logic */
+
+        /* Footer Help Logic (Strict Iteration 50 Reversion) */
         .help-content { opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; pointer-events: none; }
         .help-trigger:hover .help-content { opacity: 1; visibility: visible; transform: translateY(0); }
 
@@ -44,7 +44,7 @@
     </script>
 
     <div class="text-center mb-4">
-        <p class="text-[10px] tracking-[0.3em] uppercase text-zinc-500 font-medium">tarankurtz.com</p>
+        <p class="text-[10px] tracking-[0.3em] uppercase text-zinc-500 font-medium font-bold">tarankurtz.com</p>
         <p class="text-[9px] tracking-widest uppercase text-zinc-600">- A Server for Friends and Family -</p>
     </div>
 
@@ -59,36 +59,48 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-4xl mb-12">
-        <div onclick="window.location.href=HFS_URL" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-500">
-            <div id="hfsStatus" class="absolute top-2 text-[7px] uppercase tracking-tighter text-zinc-500 italic">Checking...</div>
-            <div class="text-2xl mb-1">📂</div>
-            <div class="text-sm uppercase tracking-widest">Files</div>
-            <div class="absolute bottom-2 opacity-60 text-[9px] font-bold uppercase tracking-tighter text-zinc-400">Guest: 1234</div>
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 w-full max-w-6xl mb-12">
+        
+        <div class="flex flex-col items-center">
+            <div id="hfsStatus" class="text-[8px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
+            <div onclick="window.location.href=HFS_URL" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-500">
+                <div class="text-2xl mb-1">📂</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Files</div>
+                <div class="absolute bottom-2 opacity-60 text-[8px] font-bold uppercase tracking-tighter text-zinc-400">Guest: 1234</div>
+            </div>
         </div>
 
-        <div onclick="window.open(PLEX_URL, '_blank')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-orange-500">
-            <div id="plexStatus" class="absolute top-2 text-[7px] uppercase tracking-tighter text-zinc-500 italic">Checking...</div>
-            <div class="text-2xl mb-1">🎬</div>
-            <div class="text-sm uppercase tracking-widest">Plex</div>
-            <span onclick="event.stopPropagation(); requestPlexAccess();" class="absolute bottom-2 text-[9px] text-zinc-500 underline uppercase hover:text-orange-400 z-10">Request Access</span>
+        <div class="flex flex-col items-center">
+            <div id="plexStatus" class="text-[8px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
+            <div onclick="window.open(PLEX_URL, '_blank')" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-orange-500">
+                <div class="text-2xl mb-1">🎬</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Plex</div>
+                <span onclick="event.stopPropagation(); requestPlexAccess();" class="absolute bottom-2 text-[8px] text-zinc-500 underline uppercase hover:text-orange-400 z-[60] pointer-events-auto">Request Access</span>
+            </div>
         </div>
 
-        <div onclick="window.open('https://youtube.com', '_blank')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-red-600">
-            <div class="text-2xl mb-1">📺</div>
-            <div class="text-sm uppercase tracking-widest">YouTube</div>
+        <div class="flex flex-col items-center pt-[13px]">
+            <div onclick="window.open('https://youtube.com', '_blank')" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-red-600">
+                <div class="text-2xl mb-1">📺</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">YouTube</div>
+            </div>
         </div>
 
-        <div onclick="window.open('https://remotedesktop.google.com/access', '_blank')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-400">
-            <div class="text-2xl mb-1">🖥️</div>
-            <div class="text-sm uppercase tracking-widest text-center px-2">Remote Desktop</div>
+        <div class="flex flex-col items-center pt-[13px]">
+            <div onclick="window.open('https://remotedesktop.google.com/access', '_blank')" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-400">
+                <div class="text-2xl mb-1">🖥️</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Remote</div>
+            </div>
         </div>
 
-        <div onclick="toggleModal('requestModal')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-emerald-500">
-            <div class="text-2xl mb-1">📥</div>
-            <div class="text-sm uppercase tracking-widest">Request</div>
-            <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[10px] text-zinc-600 underline uppercase tracking-widest hover:text-white z-10">View List</span>
+        <div class="flex flex-col items-center pt-[13px]">
+            <div onclick="toggleModal('requestModal')" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-emerald-500">
+                <div class="text-2xl mb-1">📥</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Request</div>
+                <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[9px] text-zinc-600 underline uppercase tracking-widest hover:text-white z-[60] pointer-events-auto">View List</span>
+            </div>
         </div>
+
     </div>
 
     <div id="requestModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center z-[100] p-4">
@@ -96,7 +108,7 @@
             <button onclick="closeRequestModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
             <h2 class="text-xl font-semibold mb-6 text-center text-emerald-400 uppercase tracking-widest">Media Request</h2>
             <div id="searchContainer" class="flex flex-col flex-1 overflow-hidden">
-                <input type="text" id="movieSearch" placeholder="Search Movie/TV..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-emerald-500">
+                <input type="text" id="movieSearch" placeholder="Search Movie/TV..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none">
                 <div id="results" class="mt-4 bg-zinc-800 border border-zinc-700 rounded-xl hidden overflow-y-auto"></div>
             </div>
             <div id="drillDownContainer" class="hidden flex flex-col flex-1 overflow-hidden">
@@ -151,7 +163,7 @@
 
         function setStatus(id, online) {
             const el = document.getElementById(id);
-            if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500 shadow-[0_0_5px_#22c55e]"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
+            if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
         }
 
         function doSearch(type) {
@@ -159,7 +171,6 @@
             window.location.href = type === 'google' ? `https://google.com/search?q=${encodeURIComponent(q)}` : `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
         }
 
-        // TMDB Logic
         document.getElementById('movieSearch').addEventListener('input', async (e) => {
             const val = e.target.value; if (val.length < 3) { document.getElementById('results').classList.add('hidden'); return; }
             const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${val}`);
@@ -220,17 +231,4 @@
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
         function resetSearch() { document.getElementById('movieSearch').value = ''; document.getElementById('searchContainer').classList.remove('hidden'); document.getElementById('drillDownContainer').classList.add('hidden'); document.getElementById('results').classList.add('hidden'); document.getElementById('statusMsg').classList.add('hidden'); selectedShow = null; }
         function backToSeasons() { if(selectedShow) startTvFlow(selectedShow.id, selectedShow.title, selectedShow.year); }
-        function requestPlexAccess() { const email = prompt("Enter your Plex email:"); if (email) window.location.href = `mailto:taran.kurtz@gmail.com?subject=Plex Access&body=Requesting access for: ${email}`; }
-        function renderRequests() {
-            const list = document.getElementById('publicRequestList');
-            const data = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
-            list.innerHTML = data.length === 0 ? '<li class="text-zinc-600 italic text-center text-xs py-10">Queue is empty</li>' :
-                data.map(req => `<li class="flex justify-between items-center bg-zinc-800/40 p-3 rounded-xl border border-zinc-800 text-[11px]"><span>${req.title}</span>${adminMode ? `<button onclick="removeReq(${req.id})" class="text-red-500 px-2">✕</button>` : ''}</li>`).join('');
-            if(adminMode) document.getElementById('adminListControls').classList.remove('hidden');
-        }
-        function verifyAdmin() { if (prompt("Code:") === ADMIN_PASS) { adminMode = true; renderRequests(); } }
-        function removeReq(id) { let data = JSON.parse(localStorage.getItem('mediaRequests') || '[]'); localStorage.setItem('mediaRequests', JSON.stringify(data.filter(r => r.id !== id))); renderRequests(); }
-        function clearAllRequests() { if(confirm("Clear everything?")) { localStorage.setItem('mediaRequests', '[]'); renderRequests(); } }
-    </script>
-</body>
-</html>
+        function requestPlex
