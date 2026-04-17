@@ -13,15 +13,16 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
         .search-container:focus-within { border-color: #3b82f6; }
-        .bg-custom { background-size: cover; background-position: center; background-attachment: fixed; }
+        .bg-custom { background-size: cover; background-position: center; background-attachment: fixed; transition: background-image 0.8s ease-in-out; }
         .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .dashboard-card { height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
         
+        /* Desktop vs Mobile Header spacing */
         .top-header { margin-top: 2vh; }
-        @media (min-width: 768px) { .top-header { margin-top: -10vh; } }
+        @media (min-width: 768px) { .top-header { margin-top: -8vh; } }
     </style>
 </head>
-<body id="mainBody" class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-6 font-sans transition-all duration-500 bg-custom">
+<body id="mainBody" class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-6 font-sans bg-custom">
 
     <script>
         const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
@@ -59,9 +60,9 @@
                     <div class="text-3xl mb-1">📂</div>
                     <div class="text-sm font-medium group-hover:text-blue-400">Files</div>
                 </a>
-                <div class="absolute bottom-2 flex flex-col items-center">
-                    <span class="text-[9px] text-zinc-600 uppercase leading-none">User: "guest"</span>
-                    <span class="text-[9px] text-zinc-600 uppercase leading-none mt-1">Pass: "1234"</span>
+                <div class="absolute bottom-2 flex flex-col items-center opacity-60 group-hover:opacity-100 transition-opacity">
+                    <span class="text-[9px] text-zinc-400 uppercase tracking-tighter">User: "guest"</span>
+                    <span class="text-[9px] text-zinc-400 uppercase tracking-tighter">Pass: "1234"</span>
                 </div>
             </div>
         </div>
@@ -95,13 +96,17 @@
     </div>
 
     <div id="adminPanel" class="fixed bottom-20 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl hidden flex-col gap-4 shadow-2xl z-50 w-80">
-        <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Portal Admin</h3>
-        <input type="text" id="adminTitleIn" placeholder="Website Title..." class="bg-zinc-800 p-2 rounded text-xs border border-zinc-700">
-        <div class="flex flex-col gap-1">
-            <label class="text-[10px] text-zinc-500 ml-1 italic font-light">Image name from /images folder:</label>
-            <input type="text" id="adminBgIn" placeholder="e.g. background1.jpg" class="bg-zinc-800 p-2 rounded text-xs border border-zinc-700">
+        <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-widest border-b border-zinc-800 pb-2">Admin Dashboard</h3>
+        <div>
+            <label class="text-[9px] text-zinc-500 uppercase ml-1">Title Text</label>
+            <input type="text" id="adminTitleIn" placeholder="Website Title..." class="w-full bg-zinc-800 p-2 rounded text-xs border border-zinc-700 focus:border-blue-500 outline-none">
         </div>
-        <button onclick="saveAdminChanges()" class="bg-blue-600 text-[10px] font-bold py-2 rounded uppercase mt-2">Update Portal</button>
+        <div>
+            <label class="text-[9px] text-zinc-500 uppercase ml-1">Background Filename</label>
+            <input type="text" id="adminBgIn" placeholder="e.g. wallpaper.jpg" class="w-full bg-zinc-800 p-2 rounded text-xs border border-zinc-700 focus:border-blue-500 outline-none">
+            <p class="text-[8px] text-zinc-600 mt-1 italic leading-tight">Must be uploaded to /assets (website)/images/ first.</p>
+        </div>
+        <button onclick="saveAdminChanges()" class="bg-blue-600 hover:bg-blue-500 text-[10px] font-bold py-2 rounded uppercase transition-colors">Apply Changes</button>
     </div>
 
     <footer class="mt-20 flex flex-col items-center gap-4">
@@ -112,13 +117,13 @@
                 <p><strong class="text-white">Android:</strong> Chrome > 3-Dots > Install App</p>
             </div>
         </div>
-        <div onclick="verifyAdmin()" class="text-zinc-700 text-xs tracking-widest uppercase cursor-pointer hover:text-zinc-500 transition-colors">
+        <div onclick="verifyAdmin()" class="text-zinc-700 text-xs tracking-widest uppercase cursor-pointer hover:text-zinc-400 transition-colors">
             Private Server &copy; 2026 | <span id="adminStatus">Admin Dashboard</span>
         </div>
     </footer>
 
-    <div id="requestModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
-        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative">
+    <div id="requestModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative shadow-2xl">
             <button onclick="closeRequestModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
             <h2 id="modalTitle" class="text-xl font-semibold mb-6 text-center text-emerald-400">Request Media</h2>
             <div id="searchContainer">
@@ -136,8 +141,8 @@
         </div>
     </div>
 
-    <div id="listModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
-        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative">
+    <div id="listModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative shadow-2xl">
             <button onclick="toggleModal('listModal')" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
             <h2 class="text-xl font-semibold mb-6 text-center text-yellow-400">Current Queue</h2>
             <ul id="publicRequestList" class="space-y-3 max-h-96 overflow-y-auto"></ul>
@@ -145,6 +150,7 @@
     </div>
 
     <script>
+        // --- LOAD SETTINGS ---
         window.onload = () => {
             document.getElementById('editableTitle').innerText = localStorage.getItem('portalTitle') || 'Taran Kurtz';
             const bg = localStorage.getItem('portalBg');
@@ -152,6 +158,7 @@
             checkOnlineStatus();
         };
 
+        // --- STATUS MONITOR ---
         async function checkOnlineStatus() {
             fetch(HFS_URL, { mode: 'no-cors' }).then(() => setStatus('hfsStatus', true)).catch(() => setStatus('hfsStatus', false));
             fetch('https://plex.tarankurtz.com/identity', { mode: 'no-cors' }).then(() => setStatus('plexStatus', true)).catch(() => setStatus('plexStatus', false));
@@ -162,6 +169,7 @@
             el.innerHTML = online ? `<span class="status-dot bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
         }
 
+        // --- ADMIN CONTROLS ---
         let adminMode = false;
         function verifyAdmin() {
             if (adminMode) { adminMode = false; document.getElementById('adminPanel').classList.add('hidden'); return; }
@@ -173,7 +181,6 @@
             const b = document.getElementById('adminBgIn').value;
             if(t) { localStorage.setItem('portalTitle', t); document.getElementById('editableTitle').innerText = t; }
             if(b) {
-                // Construct the full URL using your HFS path
                 const fullBgUrl = b.startsWith('http') ? b : ASSETS_URL + b;
                 localStorage.setItem('portalBg', fullBgUrl);
                 document.getElementById('mainBody').style.backgroundImage = `url('${fullBgUrl}')`;
@@ -181,6 +188,7 @@
             alert("Updated.");
         }
 
+        // --- SEARCH & UI ---
         function doSearch(type) {
             const q = document.getElementById('mainSearch').value;
             if (!q) return;
@@ -190,6 +198,7 @@
 
         function toggleModal(id) { const m = document.getElementById(id); m.classList.toggle('hidden'); m.classList.toggle('flex'); if(id === 'listModal') renderRequests(); }
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
+        
         function resetSearch() {
             document.getElementById('searchContainer').classList.remove('hidden');
             document.getElementById('drillDownContainer').classList.add('hidden');
@@ -197,9 +206,10 @@
             document.getElementById('modalTitle').innerText = "Request Media";
             document.getElementById('movieSearch').value = "";
             document.getElementById('results').innerHTML = "";
-            document.getElementById('statusMsg').className = "mt-4 p-3 rounded-xl text-center text-sm hidden";
+            document.getElementById('statusMsg').className = "hidden";
         }
 
+        // --- TMDB SEARCH LOGIC ---
         const searchInput = document.getElementById('movieSearch');
         const resultsDiv = document.getElementById('results');
 
@@ -235,7 +245,7 @@
             data.seasons.forEach(s => {
                 const div = document.createElement('div');
                 div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-xs';
-                div.innerHTML = `<span class="font-bold text-white">${s.name}</span> <span class="text-zinc-500">(${s.episode_count} Eps)</span>`;
+                div.innerHTML = `<span class="font-bold text-white">${s.name}</span> <span class="text-zinc-500 text-[10px]">(${s.episode_count} Eps)</span>`;
                 div.onclick = () => showEpisodeOptions(s.season_number, s.episode_count);
                 drillDiv.appendChild(div);
             });
@@ -245,7 +255,7 @@
             document.getElementById('backToSeasonBtn').classList.remove('hidden');
             const drillDiv = document.getElementById('drillDownResults');
             const sPad = sNum.toString().padStart(2, '0');
-            drillDiv.innerHTML = `<div class="p-3 bg-blue-900/20 text-blue-400 text-center font-bold border-b border-blue-900/50 text-xs">Season ${sNum}</div>`;
+            drillDiv.innerHTML = `<div class="p-3 bg-blue-900/20 text-blue-400 text-center font-bold border-b border-blue-900/50 text-xs uppercase tracking-tighter">Season ${sNum}</div>`;
             const fullS = document.createElement('div');
             fullS.className = 'p-3 hover:bg-blue-600 cursor-pointer border-b border-zinc-700 text-center font-bold text-xs';
             fullS.innerText = "Request Entire Season";
