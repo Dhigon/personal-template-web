@@ -17,7 +17,8 @@
         const PLEX_TOKEN = '5msRNVbv92Z_oVfyBcrv';
         const PLEX_BASE_URL = 'http://plex.tarankurtz.com:32400'; 
         const PLEX_DIRECT_LINK = 'http://plex.tarankurtz.com:32400/web'; 
-        const HFS_URL = 'http://transfer.tarankurtz.com';
+        // Updated HFS URL to your new HTTPS port 8443
+        const HFS_URL = 'https://transfer.tarankurtz.com:8443';
         const ADMIN_PASS = 'Potatoes2!'; 
     </script>
 
@@ -31,7 +32,7 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 w-full max-w-4xl mb-12">
-        <a href="https://transfer.tarankurtz.com" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-blue-500 transition-all">
+        <a href="https://transfer.tarankurtz.com:8443" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-blue-500 transition-all">
             <div class="text-3xl mb-2">📂</div>
             <div class="text-sm font-medium group-hover:text-blue-400">Files</div>
         </a>
@@ -65,7 +66,10 @@
 
             <div id="drillDownContainer" class="hidden space-y-4">
                 <div id="drillDownResults" class="bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden max-h-64 overflow-y-auto"></div>
-                <button onclick="resetSearch()" class="w-full py-2 text-xs text-zinc-500 hover:text-white uppercase tracking-widest">← Back to Search</button>
+                <div class="flex gap-2">
+                    <button id="backToSeasonBtn" onclick="backToSeasons()" class="hidden flex-1 py-2 text-xs text-blue-400 hover:text-white uppercase tracking-widest border border-blue-900/50 rounded-lg">← Back to Seasons</button>
+                    <button onclick="resetSearch()" class="flex-1 py-2 text-xs text-zinc-500 hover:text-white uppercase tracking-widest border border-zinc-800 rounded-lg">↩ Restart Search</button>
+                </div>
             </div>
 
             <div id="statusMsg" class="mt-4 p-3 rounded-xl text-center text-sm hidden"></div>
@@ -105,6 +109,7 @@
         function resetSearch() {
             document.getElementById('searchContainer').classList.remove('hidden');
             document.getElementById('drillDownContainer').classList.add('hidden');
+            document.getElementById('backToSeasonBtn').classList.add('hidden');
             document.getElementById('modalTitle').innerText = "Request Media";
             document.getElementById('movieSearch').value = "";
             document.getElementById('results').innerHTML = "";
@@ -128,10 +133,11 @@
                 if (!title) return;
                 const div = document.createElement('div');
                 div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 last:border-0';
-                div.innerHTML = `<span class="font-bold text-white">${title}</span> <span class="text-zinc-500 text-xs">(${type.toUpperCase()} ${year})</span>`;
+                // REVISED FORMATTING FOR SEARCH PREVIEW
+                div.innerHTML = `<span class="font-bold text-white">${title}</span> <span class="text-zinc-500 text-xs">(${year}) - ${type === 'tv' ? 'TV' : 'MOVIE'}</span>`;
                 div.onclick = () => {
                     if (type === 'tv') startTvDrilldown(item.id, title, year);
-                    else runVerification(title, year);
+                    else runVerification(title, year, "", "MOVIE");
                 };
                 resultsDiv.appendChild(div);
             });
@@ -141,6 +147,7 @@
             selectedShow = { id, title, year };
             document.getElementById('searchContainer').classList.add('hidden');
             document.getElementById('drillDownContainer').classList.remove('hidden');
+            document.getElementById('backToSeasonBtn').classList.add('hidden');
             document.getElementById('modalTitle').innerText = "Select Detail";
             
             const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_KEY}`);
@@ -149,23 +156,23 @@
             const drillDiv = document.getElementById('drillDownResults');
             drillDiv.innerHTML = '';
 
-            // NEW OPTION: REQUEST ENTIRE SHOW (Requirement #1)
             const showBtn = document.createElement('div');
             showBtn.className = 'p-4 bg-emerald-600/30 hover:bg-emerald-600 cursor-pointer border-b border-emerald-500/50 text-center font-bold text-white';
             showBtn.innerText = "Request Entire Series";
-            showBtn.onclick = () => runVerification(title, year);
+            showBtn.onclick = () => runVerification(title, year, "", "TV");
             drillDiv.appendChild(showBtn);
 
             data.seasons.forEach(s => {
                 const div = document.createElement('div');
                 div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700';
-                div.innerHTML = `<span class="font-bold text-white">${s.name}</span> <span class="text-zinc-500 text-xs">(${s.episode_count} Episodes)</span>`;
+                div.innerHTML = `<span class="font-bold text-white">${s.name}</span> <span class="text-zinc-500 text-xs">(${s.episode_count} Eps)</span>`;
                 div.onclick = () => showEpisodeOptions(s.season_number, s.episode_count);
                 drillDiv.appendChild(div);
             });
         }
 
         function showEpisodeOptions(sNum, epCount) {
+            document.getElementById('backToSeasonBtn').classList.remove('hidden');
             const drillDiv = document.getElementById('drillDownResults');
             const sPad = sNum.toString().padStart(2, '0');
             drillDiv.innerHTML = `<div class="p-4 bg-blue-900/20 text-blue-400 text-center font-bold border-b border-blue-900/50">Season ${sNum}</div>`;
@@ -173,23 +180,28 @@
             const fullS = document.createElement('div');
             fullS.className = 'p-3 hover:bg-blue-600 cursor-pointer border-b border-zinc-700 text-center font-bold';
             fullS.innerText = "Request Entire Season";
-            fullS.onclick = () => runVerification(selectedShow.title, selectedShow.year, `[S${sPad}]`);
+            fullS.onclick = () => runVerification(selectedShow.title, selectedShow.year, `[S${sPad}]`, "TV");
             drillDiv.appendChild(fullS);
 
             for(let i=1; i<=epCount; i++) {
                 const epPad = i.toString().padStart(2, '0');
                 const div = document.createElement('div');
-                div.className = 'p-2 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-sm pl-6';
+                div.className = 'p-2 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-sm pl-6 text-zinc-300';
                 div.innerText = `Episode ${i} - [S${sPad}E${epPad}]`;
-                div.onclick = () => runVerification(selectedShow.title, selectedShow.year, `[S${sPad}E${epPad}]`);
+                div.onclick = () => runVerification(selectedShow.title, selectedShow.year, `[S${sPad}E${epPad}]`, "TV");
                 drillDiv.appendChild(div);
             }
         }
 
-        async function runVerification(title, year, tag = "") {
-            const fullTitle = `${title} (${year}) ${tag}`.trim();
+        function backToSeasons() {
+            if(selectedShow) startTvDrilldown(selectedShow.id, selectedShow.title, selectedShow.year);
+        }
+
+        async function runVerification(title, year, tag = "", mediaType = "MOVIE") {
+            // UPDATED FINAL FORMATTING: [Show] (Year) [Tags] - TYPE
+            const fullTitle = `${title} (${year}) ${tag} - ${mediaType}`.replace(/\s+/g, ' ').trim();
             const statusMsg = document.getElementById('statusMsg');
-            statusMsg.classList.remove('hidden', 'bg-red-900/20', 'text-red-400', 'bg-blue-900/20', 'text-blue-400', 'bg-yellow-900/20', 'text-yellow-400', 'bg-emerald-900/20', 'text-emerald-400');
+            statusMsg.className = "mt-4 p-3 rounded-xl text-center text-sm";
             statusMsg.innerText = "Checking Library...";
             statusMsg.classList.remove('hidden');
 
@@ -203,6 +215,7 @@
             try {
                 const plexRes = await fetch(`${PLEX_BASE_URL}/search?query=${encodeURIComponent(title)}&X-Plex-Token=${PLEX_TOKEN}`);
                 const text = await plexRes.text();
+                // If checking full series/movie, verify existence
                 if (text.includes(title) && tag === "") {
                     statusMsg.innerHTML = `✅ Already on Plex!`;
                     statusMsg.classList.add('bg-blue-900/20', 'text-blue-400');
@@ -231,8 +244,8 @@
             if (!list) return;
             list.innerHTML = requests.length === 0 ? `<li class="text-zinc-600 italic text-center">No current requests.</li>` : 
                 requests.map(req => `<li class="flex justify-between items-center bg-zinc-800/50 p-4 rounded-2xl border border-zinc-800">
-                    <div class="font-medium">${req.title}</div>
-                    ${adminMode ? `<button onclick="removeReq(${req.id})" class="text-xs text-red-400 bg-red-900/20 px-3 py-1 rounded-lg">Delete</button>` : `<span class="text-[10px] text-zinc-600 uppercase tracking-widest">Pending</span>`}
+                    <div class="font-medium text-sm text-zinc-200">${req.title}</div>
+                    ${adminMode ? `<button onclick="removeReq(${req.id})" class="text-xs text-red-400 bg-red-900/20 px-3 py-1 rounded-lg ml-2 shrink-0">Delete</button>` : `<span class="text-[10px] text-zinc-600 uppercase tracking-widest shrink-0 ml-2">Pending</span>`}
                 </li>`).join('');
         }
 
