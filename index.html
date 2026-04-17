@@ -16,7 +16,8 @@
         const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
         const PLEX_TOKEN = '5msRNVbv92Z_oVfyBcrv';
         const PLEX_BASE_URL = 'http://plex.tarankurtz.com:32400'; 
-        const HFS_URL = 'https://transfer.tarankurtz.com'; // Changed to https
+        const HFS_URL = 'https://transfer.tarankurtz.com';
+        const ADMIN_PASS = '1234'; // Change this to your preferred simple code
     </script>
 
     <h1 class="text-4xl font-light tracking-widest mb-10 text-center uppercase">Taran Kurtz</h1>
@@ -50,25 +51,60 @@
         </button>
     </div>
 
-    <footer onclick="toggleAdminView()" class="mt-20 text-zinc-700 text-xs tracking-widest uppercase cursor-pointer hover:text-zinc-500 transition-colors">
+    <div id="requestModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl relative">
+            <button onclick="toggleModal('requestModal')" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
+            <h2 class="text-xl font-semibold mb-6 text-center text-emerald-400">Request Media</h2>
+            <div class="relative">
+                <input type="text" id="movieSearch" placeholder="Search Movie/TV Title..." autocomplete="off"
+                    class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 focus:outline-none focus:border-emerald-500">
+                <div id="results" class="absolute w-full mt-2 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden hidden z-50 shadow-2xl"></div>
+            </div>
+            <div id="statusMsg" class="mt-4 p-3 rounded-xl text-center text-sm hidden"></div>
+        </div>
+    </div>
+
+    <div id="listModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl relative">
+            <button onclick="toggleModal('listModal')" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
+            <h2 class="text-xl font-semibold mb-6 text-center text-yellow-400">Current Queue</h2>
+            <ul id="publicRequestList" class="space-y-3 max-h-96 overflow-y-auto pr-2"></ul>
+        </div>
+    </div>
+
+    <footer onclick="verifyAdmin()" class="mt-20 text-zinc-700 text-xs tracking-widest uppercase cursor-pointer hover:text-zinc-500 transition-colors">
         Private Server &copy; 2026 | <span id="adminStatus">Admin Dashboard</span>
     </footer>
 
     <script>
-        // Modal and logic functionality continues here...
         let adminMode = false;
+
+        function verifyAdmin() {
+            if (adminMode) {
+                adminMode = false;
+                document.getElementById('adminStatus').innerText = "Admin Dashboard";
+                renderRequests();
+                return;
+            }
+            const pass = prompt("Enter Admin Code:");
+            if (pass === ADMIN_PASS) {
+                adminMode = true;
+                document.getElementById('adminStatus').innerText = "ADMIN MODE: ON";
+                renderRequests();
+            } else {
+                alert("Incorrect Access Code");
+            }
+        }
+
+        // TOGGLE MODAL LOGIC
         function toggleModal(id) {
             const m = document.getElementById(id);
             m.classList.toggle('hidden');
             m.classList.toggle('flex');
             if(id === 'listModal') renderRequests();
         }
-        function toggleAdminView() {
-            adminMode = !adminMode;
-            document.getElementById('adminStatus').innerText = adminMode ? "ADMIN MODE: ON" : "Admin Dashboard";
-            renderRequests();
-        }
 
+        // PREDICTIVE SEARCH LOGIC
         const searchInput = document.getElementById('movieSearch');
         const resultsDiv = document.getElementById('results');
         const statusMsg = document.getElementById('statusMsg');
@@ -92,16 +128,19 @@
             });
         });
 
+        // PLEX & QUEUE VERIFICATION LOGIC
         async function runVerification(title, year) {
             resultsDiv.classList.add('hidden');
             statusMsg.classList.remove('hidden', 'bg-red-900/20', 'text-red-400', 'bg-blue-900/20', 'text-blue-400', 'bg-yellow-900/20', 'text-yellow-400');
             statusMsg.innerText = "Checking Library...";
+            
             const existingRequests = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
             if (existingRequests.some(r => r.title.toLowerCase() === title.toLowerCase())) {
-                statusMsg.innerHTML = `⚠️ Already Requested!`;
+                statusMsg.innerHTML = `⚠️ Already on the request list!`;
                 statusMsg.classList.add('bg-yellow-900/20', 'text-yellow-400');
                 return;
             }
+            
             try {
                 const plexRes = await fetch(`${PLEX_BASE_URL}/search?query=${encodeURIComponent(title)}&X-Plex-Token=${PLEX_TOKEN}`);
                 const text = await plexRes.text();
@@ -126,17 +165,16 @@
             localStorage.setItem('mediaRequests', JSON.stringify(requests));
         }
 
+        // RENDER QUEUE WITH ADMIN CONTROLS
         function renderRequests() {
             const list = document.getElementById('publicRequestList');
             const requests = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
-            const modalList = document.getElementById('publicRequestList');
-            if (modalList) {
-                modalList.innerHTML = requests.length === 0 ? `<li class="text-zinc-600 italic text-center">No requests found.</li>` : 
+            if (!list) return;
+            list.innerHTML = requests.length === 0 ? `<li class="text-zinc-600 italic text-center">No current requests.</li>` : 
                 requests.map(req => `<li class="flex justify-between items-center bg-zinc-800/50 p-4 rounded-2xl border border-zinc-800">
                     <div><div class="font-medium">${req.title}</div><div class="text-zinc-500 text-xs">${req.year}</div></div>
                     ${adminMode ? `<button onclick="removeReq(${req.id})" class="text-xs text-red-400 bg-red-900/20 px-3 py-1 rounded-lg">Delete</button>` : `<span class="text-[10px] text-zinc-600 uppercase tracking-widest">Pending</span>`}
                 </li>`).join('');
-            }
         }
 
         function removeReq(id) {
