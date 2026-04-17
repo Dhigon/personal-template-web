@@ -1,59 +1,68 @@
-<!-- Enhanced Media Request Box -->
-<div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl relative">
-    <h2 class="text-xl font-semibold mb-6 text-center text-blue-400">🎬 Search & Request</h2>
-    
-    <div class="space-y-4 relative">
-        <input type="text" id="movieSearch" placeholder="Start typing a movie or show..." 
-            class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500">
-        
-        <!-- This is where the results will pop up -->
-        <div id="resultsList" class="absolute left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden hidden z-50 max-h-60 overflow-y-auto shadow-2xl"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>.
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taran's Portal</title>
+    <script src="https://tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-6">
 
-        <input type="hidden" id="selectedTitle">
-        <button id="submitRequest" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-colors">
-            Submit Request
-        </button>
+    <h1 class="text-4xl font-light tracking-widest mb-10">TARAN KURTZ</h1>
+
+    <!-- Search Bar -->
+    <div class="w-full max-w-xl mb-12">
+        <form action="https://google.com" method="get" class="relative">
+            <input type="text" name="q" placeholder="Search Google or AI..." 
+                class="w-full bg-zinc-900 border border-zinc-800 rounded-full py-4 px-6 text-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-center">
+        </form>
     </div>
-</div>
 
-<script>
-    const API_KEY = 'YOUR_TMDB_ACCESS_TOKEN_HERE';
-    const searchInput = document.getElementById('movieSearch');
-    const resultsList = document.getElementById('resultsList');
+    <!-- Quick Links Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl mb-12">
+        <a href="http://tarankurtz.com" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-blue-500 transition-all">
+            <div class="text-3xl mb-2">📂</div>
+            <div class="text-sm font-medium group-hover:text-blue-400">Files</div>
+        </a>
+        <a href="http://tarankurtz.com" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-blue-500 transition-all">
+            <div class="text-3xl mb-2">🎬</div>
+            <div class="text-sm font-medium group-hover:text-blue-400">Overseerr</div>
+        </a>
+        <a href="https://plex.tv" target="_blank" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-blue-500 transition-all">
+            <div class="text-3xl mb-2">🍿</div>
+            <div class="text-sm font-medium group-hover:text-blue-400">Plex</div>
+        </a>
+        <a href="https://openai.com" target="_blank" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-blue-500 transition-all">
+            <div class="text-3xl mb-2">🤖</div>
+            <div class="text-sm font-medium group-hover:text-blue-400">AI Chat</div>
+        </a>
+    </div>
 
-    searchInput.addEventListener('input', async (e) => {
-        const query = e.target.value;
-        if (query.length < 3) { resultsList.classList.add('hidden'); return; }
+    <!-- Simple Request Form -->
+    <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl">
+        <h2 class="text-xl font-semibold mb-6 text-center text-blue-400">🎬 Media Request</h2>
+        
+        <!-- Change the action URL to your Google Form or HFS upload link if needed -->
+        <form action="#" method="POST" class="space-y-4">
+            <div>
+                <input type="text" placeholder="Your Name" required
+                    class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+                <input type="text" placeholder="Movie or TV Show Name" required
+                    class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500">
+            </div>
+            <button type="submit" 
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-900/20">
+                Submit Request
+            </button>
+        </form>
+    </div>
 
-        const response = await fetch(`https://themoviedb.org{query}&include_adult=false&api_key=${API_KEY}`);
-        const data = await response.json();
+    <footer class="mt-20 text-zinc-600 text-xs tracking-widest uppercase">
+        Private Server &copy; 2026
+    </footer>
 
-        resultsList.innerHTML = '';
-        resultsList.classList.remove('hidden');
-
-        data.results.slice(0, 5).forEach(item => {
-            const div = document.createElement('div');
-            const name = item.title || item.name;
-            const year = (item.release_date || item.first_air_date || '').substring(0, 4);
-            
-            div.className = "p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 flex items-center space-x-3";
-            div.innerHTML = `
-                <img src="https://tmdb.org{item.poster_path}" class="w-10 rounded" onerror="this.src='https://placeholder.com'">
-                <div>
-                    <div class="text-sm font-bold">${name}</div>
-                    <div class="text-xs text-zinc-400">${item.media_type.toUpperCase()} • ${year}</div>
-                </div>
-            `;
-            div.onclick = () => {
-                searchInput.value = `${name} (${year})`;
-                resultsList.classList.add('hidden');
-            };
-            resultsList.appendChild(div);
-        });
-    });
-
-    // Close results if clicking outside
-    document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target)) resultsList.classList.add('hidden');
-    });
-</script>
+</body>
+</html>
