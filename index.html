@@ -16,11 +16,8 @@
         .dashboard-card { height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; }
         .sub-link { position: absolute; bottom: 12px; font-size: 10px; color: #52525b; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: underline; z-index: 50; }
         .sub-link:hover { color: #ffffff; }
-        
-        /* Fix for Request #1: Stabilize List Modal Height */
         .list-fixed-height { height: 500px; display: flex; flex-direction: column; }
         .modal-fixed-height { height: 500px; display: flex; flex-direction: column; }
-        
         .help-trigger:hover .help-content { opacity: 1; visibility: visible; transform: translateY(0); }
         .help-content { opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; }
     </style>
@@ -138,8 +135,7 @@
     </footer>
 
     <script>
-        let selectedShow = null; 
-        let adminMode = false;
+        let selectedShow = null; let adminMode = false;
 
         (function init() {
             const savedTitle = localStorage.getItem('portalTitle') || "Taran's Portal";
@@ -162,12 +158,7 @@
         function doSearch(type) {
             const q = document.getElementById('mainSearch').value;
             if(!q) return;
-            if(type === 'google') {
-                window.location.href = `https://google.com/search?q=${encodeURIComponent(q)}`;
-            } else {
-                // Fixed logic for Question #1: Passing search bar text to Gemini
-                window.location.href = `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
-            }
+            window.location.href = type === 'google' ? `https://google.com/search?q=${encodeURIComponent(q)}` : `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
         }
 
         document.getElementById('movieSearch').addEventListener('input', async (e) => {
@@ -241,11 +232,7 @@
             }
         }
 
-        function openListView() { 
-            renderRequests(); 
-            if(adminMode) document.getElementById('adminListControls').classList.remove('hidden');
-            toggleModal('listModal'); 
-        }
+        function openListView() { renderRequests(); if(adminMode) document.getElementById('adminListControls').classList.remove('hidden'); toggleModal('listModal'); }
 
         function renderRequests() {
             const list = document.getElementById('publicRequestList');
@@ -262,26 +249,20 @@
 
         function clearAllRequests() { if(confirm("Clear the entire queue?")) { localStorage.setItem('mediaRequests', '[]'); renderRequests(); } }
 
-        function verifyAdmin() { 
-            if (prompt("Admin Code:") === ADMIN_PASS) { 
-                adminMode = true; 
-                document.getElementById('adminPanel').classList.remove('hidden'); 
-                document.getElementById('adminPanel').classList.add('flex'); 
-            } 
-        }
+        function verifyAdmin() { if (prompt("Admin Code:") === ADMIN_PASS) { adminMode = true; document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('flex'); } }
 
         function saveAdminChanges() {
             const t = document.getElementById('adminTitleIn').value;
             const b = document.getElementById('adminBgIn').value;
             if(t) { localStorage.setItem('portalTitle', t); document.getElementById('editableTitle').innerText = t; }
             if(b) { 
-                // Enhanced Logic: Explicitly ensuring Background - [X].jpg
-                let cleanB = b.replace(/Background - /g, "").replace(/\.jpg/g, "");
-                const fullUrl = b.startsWith('http') ? b : `${ASSETS_URL}Background - ${cleanB}.jpg`; 
+                // Enhanced Logic for HFS: Replaces spaces with %20 and forces .jpg
+                let cleanB = b.replace(/Background - /g, "").replace(/\.jpg/g, "").trim();
+                const fileName = `Background - ${cleanB}.jpg`;
+                const fullUrl = b.startsWith('http') ? b : `${ASSETS_URL}${encodeURIComponent(fileName)}`; 
                 localStorage.setItem('portalBg', fullUrl); 
                 document.getElementById('mainBody').style.backgroundImage = `url('${fullUrl}')`; 
             }
-            // Request #2 Fix: Removed the line that hides the admin panel after apply
             alert("Changes applied!");
         }
 
