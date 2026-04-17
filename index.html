@@ -7,7 +7,6 @@
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Taran's Portal">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3585/3585145.png">
     <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/512/3585/3585145.png">
 
@@ -16,6 +15,7 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
         
+        /* VAULTED BACKGROUND LOGIC */
         #mainBody { 
             background-image: url('https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/background-1.jpg');
             background-size: cover; background-position: center; background-attachment: fixed; background-color: #09090b;
@@ -24,7 +24,8 @@
         .status-dot { height: 7px; width: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .dashboard-card { height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; }
         
-        #mainSearch { outline: none !important; box-shadow: none !important; border: none !important; background-color: transparent !important; }
+        /* VAULTED SEARCH BAR CSS */
+        #mainSearch { outline: none !important; box-shadow: none !important; border: none !important; background-color: transparent !important; color: white !important; }
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
         input:-webkit-autofill:focus {
@@ -50,7 +51,7 @@
     </script>
 
     <div class="text-center mb-4">
-        <p class="text-[10px] tracking-[0.3em] uppercase text-zinc-500 font-medium">tarankurtz.com</p>
+        <p class="text-[10px] tracking-[0.3em] uppercase text-zinc-500 font-medium">tarankurtz.com via Cloudflare</p>
         <p class="text-[9px] tracking-widest uppercase text-zinc-600">- A Server for Friends and Family -</p>
     </div>
 
@@ -154,21 +155,29 @@
             checkOnlineStatus();
         })();
 
+        // Updated Ping Logic for Issue #3
         async function checkOnlineStatus() {
-            fetch(HFS_URL, { mode: 'no-cors' }).then(() => setStatus('hfsStatus', true)).catch(() => setStatus('hfsStatus', false));
-            fetch(NAS_PHYSICAL_IP, { mode: 'no-cors' }).then(() => setStatus('plexStatus', true)).catch(() => setStatus('plexStatus', false));
+            fetch(HFS_URL, { mode: 'no-cors', cache: 'no-store' }).then(() => setStatus('hfsStatus', true)).catch(() => setStatus('hfsStatus', false));
+            fetch(NAS_PHYSICAL_IP, { mode: 'no-cors', cache: 'no-store' }).then(() => setStatus('plexStatus', true)).catch(() => setStatus('plexStatus', false));
         }
 
         function setStatus(id, online) {
             const el = document.getElementById(id);
-            if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
+            if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500 shadow-[0_0_5px_#22c55e]"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
         }
 
+        // Updated Search Logic for Issue #2
         function doSearch(type) {
             const q = document.getElementById('mainSearch').value; if(!q) return;
-            window.location.href = type === 'google' ? `https://google.com/search?q=${encodeURIComponent(q)}` : `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
+            if(type === 'google') {
+                window.location.href = `https://google.com/search?q=${encodeURIComponent(q)}`;
+            } else {
+                // Gemini-specific query parameter
+                window.location.href = `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
+            }
         }
 
+        // --- TMDB Logic ---
         document.getElementById('movieSearch').addEventListener('input', async (e) => {
             const val = e.target.value; if (val.length < 3) { document.getElementById('results').classList.add('hidden'); return; }
             const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${val}`);
@@ -190,16 +199,12 @@
             const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_KEY}`);
             const data = await res.json();
             const box = document.getElementById('drillDownResults');
-            
-            // On season selection, ensure "Back" is hidden
             document.getElementById('backToSeasonBtn').classList.add('hidden');
-
             box.innerHTML = `<div class="p-3 bg-emerald-600/20 text-center text-xs cursor-pointer mb-2" onclick="runVerification('${title}', '${year}', '', 'TV')">Request Full Series</div>`;
             data.seasons.forEach(s => {
-                if(s.season_number === 0) return; // Skip specials usually
+                if(s.season_number === 0) return;
                 const d = document.createElement('div'); d.className = 'p-3 hover:bg-zinc-700 border-b border-zinc-700 text-xs cursor-pointer'; d.innerText = s.name;
                 d.onclick = () => {
-                    // Episode selection: Show "Back"
                     document.getElementById('backToSeasonBtn').classList.remove('hidden');
                     box.innerHTML = `<div class="p-3 bg-blue-600/20 text-center text-xs cursor-pointer mb-2" onclick="runVerification('${title}', '${year}', '[S${s.season_number}]', 'TV')">Request Entire Season ${s.season_number}</div>`;
                     for(let i=1; i<=s.episode_count; i++) {
@@ -228,27 +233,12 @@
             }
         }
 
-        function verifyAdmin() { if (prompt("Code:") === ADMIN_PASS) { adminMode = true; document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('flex'); } }
-        function saveAdminChanges() {
-            const t = document.getElementById('adminTitleIn').value;
-            if(t) { localStorage.setItem('portalTitle', t); document.getElementById('editableTitle').innerText = t; }
-            alert("Updated!");
-        }
-
         function toggleModal(id) { const m = document.getElementById(id); m.classList.toggle('hidden'); m.classList.toggle('flex'); }
         function openListView() { renderRequests(); toggleModal('listModal'); }
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
-        
-        function resetSearch() { 
-            // Request #4: Clear search bar on restart
-            document.getElementById('movieSearch').value = '';
-            document.getElementById('searchContainer').classList.remove('hidden'); 
-            document.getElementById('drillDownContainer').classList.add('hidden'); 
-            document.getElementById('results').classList.add('hidden'); 
-            document.getElementById('statusMsg').classList.add('hidden'); 
-            selectedShow = null; 
-        }
-
+        function resetSearch() { document.getElementById('movieSearch').value = ''; document.getElementById('searchContainer').classList.remove('hidden'); document.getElementById('drillDownContainer').classList.add('hidden'); document.getElementById('results').classList.add('hidden'); document.getElementById('statusMsg').classList.add('hidden'); selectedShow = null; }
+        function backToSeasons() { if(selectedShow) startTvFlow(selectedShow.id, selectedShow.title, selectedShow.year); }
+        function requestPlexAccess() { const email = prompt("Enter your Plex email:"); if (email) window.location.href = `mailto:taran.kurtz@gmail.com?subject=Plex Portal Access Request&body=Requesting access for Plex Email: ${email}`; }
         function renderRequests() {
             const list = document.getElementById('publicRequestList');
             const data = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
@@ -256,9 +246,12 @@
                 data.map(req => `<li class="flex justify-between items-center bg-zinc-800/40 p-3 rounded-xl border border-zinc-800 text-[11px]"><span>${req.title}</span>${adminMode ? `<button onclick="removeReq(${req.id})" class="text-red-500 px-2">✕</button>` : ''}</li>`).join('');
             if(adminMode) document.getElementById('adminListControls').classList.remove('hidden');
         }
-
-        function backToSeasons() { if(selectedShow) startTvFlow(selectedShow.id, selectedShow.title, selectedShow.year); }
-        function requestPlexAccess() { const email = prompt("Enter your Plex email:"); if (email) window.location.href = `mailto:taran.kurtz@gmail.com?subject=Plex Request&body=Email: ${email}`; }
+        function verifyAdmin() { if (prompt("Code:") === ADMIN_PASS) { adminMode = true; document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('flex'); } }
+        function saveAdminChanges() {
+            const t = document.getElementById('adminTitleIn').value;
+            if(t) { localStorage.setItem('portalTitle', t); document.getElementById('editableTitle').innerText = t; }
+            alert("Updated!");
+        }
         function removeReq(id) { let data = JSON.parse(localStorage.getItem('mediaRequests') || '[]'); localStorage.setItem('mediaRequests', JSON.stringify(data.filter(r => r.id !== id))); renderRequests(); }
         function clearAllRequests() { if(confirm("Clear everything?")) { localStorage.setItem('mediaRequests', '[]'); renderRequests(); } }
     </script>
