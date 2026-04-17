@@ -12,7 +12,7 @@
         .bg-custom { background-size: cover; background-position: center; background-attachment: fixed; transition: background-image 0.8s ease-in-out; }
         .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .dashboard-card { height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
-        .sub-link { position: absolute; bottom: 12px; font-size: 10px; color: #52525b; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: underline; cursor: pointer; z-index: 10; transition: color 0.2s; }
+        .sub-link { position: absolute; bottom: 12px; font-size: 10px; color: #52525b; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: underline; cursor: pointer; z-index: 20; }
         .sub-link:hover { color: #ffffff; }
         @media (min-width: 768px) { .top-header { margin-top: -8vh; } }
     </style>
@@ -20,14 +20,14 @@
 <body id="mainBody" class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-6 font-sans bg-custom">
 
     <script>
-        /** * GLOBAL CONFIGURATION */
+        /** * GLOBAL CONFIGURATION (Iteration 26) */
         const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
-        const PLEX_TOKEN = '5msRNVbv92Z_oVfyBcrv';
         const PLEX_URL = 'https://plex.tarankurtz.com'; 
         const HFS_URL = 'https://transfer.tarankurtz.com:8443'; 
         const ASSETS_URL = 'https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/';
         const ADMIN_PASS = 'Potatoes2!';
         
+        // EmailJS Initialization
         (function() { emailjs.init("YOUR_PUBLIC_KEY"); })();
     </script>
 
@@ -38,7 +38,17 @@
 
     <h1 id="editableTitle" class="text-4xl font-light tracking-widest mb-10 text-center uppercase">Taran Kurtz</h1>
 
+    <div class="w-full max-w-2xl mb-12">
+        <div class="flex items-center bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-full px-2 py-2 shadow-xl">
+            <input type="text" id="mainSearch" placeholder="Search Google..." class="flex-1 bg-transparent py-3 px-6 text-lg focus:outline-none text-white">
+            <button onclick="doSearch()" class="p-3 hover:bg-zinc-800 rounded-full transition-colors">
+                <svg class="w-6 h-6 text-zinc-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.47-2.1 4.64-1.2 1.16-2.76 1.84-5.74 1.84-4.8 0-8.59-3.92-8.59-8.68s3.79-8.68 8.59-8.68c2.4 0 4.2 1 5.56 2.32l2.32-2.32C18.44 1.34 15.68 0 12.48 0 5.8 0 0 5.38 0 12s5.8 12 12.48 12c3.52 0 6.16-1.16 8.32-3.4 2.24-2.24 2.96-5.44 2.96-8.08 0-.64-.08-1.28-.16-1.92h-11.12z"/></svg>
+            </button>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mb-12">
+        
         <div class="flex flex-col items-center">
             <div id="hfsStatus" class="text-[9px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
             <div class="dashboard-card w-full group bg-zinc-900/90 border border-zinc-800 rounded-2xl text-center hover:border-blue-500 transition-all">
@@ -47,7 +57,7 @@
                     <div class="text-sm font-medium group-hover:text-blue-400">Files</div>
                 </a>
                 <div class="absolute bottom-2 flex flex-col items-center opacity-40 group-hover:opacity-100 transition-opacity">
-                    <span class="text-[9px] text-zinc-400 uppercase">User: "guest" | Pass: "1234"</span>
+                    <span class="text-[9px] text-zinc-400 uppercase italic">Guest: 1234</span>
                 </div>
             </div>
         </div>
@@ -70,26 +80,4 @@
                     <div class="text-3xl mb-1">📥</div>
                     <div class="text-sm font-medium group-hover:text-emerald-400">Request</div>
                 </div>
-                <span onclick="openListView()" class="sub-link">View List</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="requestModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center z-[70] p-4">
-        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative">
-            <button onclick="closeRequestModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
-            <h2 id="modalTitle" class="text-xl font-semibold mb-6 text-center text-emerald-400 uppercase">Request Media</h2>
-            
-            <div id="searchContainer">
-                <input type="text" id="movieSearch" placeholder="Search Movie or TV..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 focus:outline-none focus:border-emerald-500 text-white">
-                <div id="results" class="mt-2 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden hidden max-h-64 overflow-y-auto"></div>
-            </div>
-
-            <div id="drillDownContainer" class="hidden space-y-4">
-                <div id="drillDownResults" class="bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden max-h-64 overflow-y-auto"></div>
-                <div class="flex gap-2">
-                    <button id="backToSeasonBtn" onclick="backToSeasons()" class="hidden flex-1 py-2 text-xs text-blue-400 border border-blue-900/50 rounded-lg">← BACK</button>
-                    <button onclick="resetSearch()" class="flex-1 py-2 text-xs text-zinc-500 border border-zinc-800 rounded-lg">RESTART</button>
-                </div>
-            </div>
-            <div id
+                <span onclick="openListView()" class="sub-link">View
