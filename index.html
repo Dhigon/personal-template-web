@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taran's Portal</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Taran Portal">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/10156/10156015.png">
     
@@ -15,11 +15,8 @@
         .search-container:focus-within { border-color: #3b82f6; }
         .bg-custom { background-size: cover; background-position: center; background-attachment: fixed; }
         .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .dashboard-card { height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
         
-        /* Ensures all buttons are identical height/width */
-        .dashboard-card { height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        
-        /* Header positioning for Desktop vs Mobile */
         .top-header { margin-top: 2vh; }
         @media (min-width: 768px) { .top-header { margin-top: -10vh; } }
     </style>
@@ -29,8 +26,9 @@
     <script>
         const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
         const PLEX_TOKEN = '5msRNVbv92Z_oVfyBcrv';
-        const PLEX_URL = 'https://plex.tarankurtz.com'; // Pointing to your server
+        const PLEX_URL = 'https://plex.tarankurtz.com'; 
         const HFS_URL = 'https://transfer.tarankurtz.com:8443'; 
+        const ASSETS_URL = 'https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/';
         const ADMIN_PASS = 'Potatoes2!'; 
     </script>
 
@@ -44,28 +42,38 @@
     <div class="w-full max-w-2xl mb-12">
         <div class="search-container flex items-center bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-full px-2 py-2 transition-all shadow-xl">
             <input type="text" id="mainSearch" placeholder="Search Google or ask AI..." class="flex-1 bg-transparent py-3 px-6 text-lg focus:outline-none text-white">
-            <button onclick="doSearch('google')" class="p-3 hover:bg-zinc-800 rounded-full transition-colors group"><svg class="w-6 h-6 text-zinc-400 group-hover:text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.47-2.1 4.64-1.2 1.16-2.76 1.84-5.74 1.84-4.8 0-8.59-3.92-8.59-8.68s3.79-8.68 8.59-8.68c2.4 0 4.2 1 5.56 2.32l2.32-2.32C18.44 1.34 15.68 0 12.48 0 5.8 0 0 5.38 0 12s5.8 12 12.48 12c3.52 0 6.16-1.16 8.32-3.4 2.24-2.24 2.96-5.44 2.96-8.08 0-.64-.08-1.28-.16-1.92h-11.12z"/></svg></button>
-            <button onclick="doSearch('ai')" class="ml-1 p-3 bg-blue-600 hover:bg-blue-500 rounded-full transition-all shadow-lg group"><svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></button>
+            <button onclick="doSearch('google')" class="p-3 hover:bg-zinc-800 rounded-full transition-colors group">
+                <svg class="w-6 h-6 text-zinc-400 group-hover:text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.47-2.1 4.64-1.2 1.16-2.76 1.84-5.74 1.84-4.8 0-8.59-3.92-8.59-8.68s3.79-8.68 8.59-8.68c2.4 0 4.2 1 5.56 2.32l2.32-2.32C18.44 1.34 15.68 0 12.48 0 5.8 0 0 5.38 0 12s5.8 12 12.48 12c3.52 0 6.16-1.16 8.32-3.4 2.24-2.24 2.96-5.44 2.96-8.08 0-.64-.08-1.28-.16-1.92h-11.12z"/></svg>
+            </button>
+            <button onclick="doSearch('ai')" class="ml-1 p-3 bg-blue-600 hover:bg-blue-500 rounded-full transition-all shadow-lg group">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </button>
         </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 w-full max-w-5xl mb-12">
         <div class="flex flex-col items-center">
             <div id="hfsStatus" class="text-[9px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
-            <a href="javascript:void(0)" onclick="window.location.href=HFS_URL" class="dashboard-card w-full group bg-zinc-900/90 border border-zinc-800 rounded-2xl text-center hover:border-blue-500 transition-all">
-                <div class="text-3xl mb-2">📂</div>
-                <div class="text-sm font-medium group-hover:text-blue-400">Files</div>
-            </a>
+            <div class="dashboard-card w-full group bg-zinc-900/90 border border-zinc-800 rounded-2xl text-center hover:border-blue-500 transition-all">
+                <a href="javascript:void(0)" onclick="window.location.href=HFS_URL" class="block">
+                    <div class="text-3xl mb-1">📂</div>
+                    <div class="text-sm font-medium group-hover:text-blue-400">Files</div>
+                </a>
+                <div class="absolute bottom-2 flex flex-col items-center">
+                    <span class="text-[9px] text-zinc-600 uppercase leading-none">User: "guest"</span>
+                    <span class="text-[9px] text-zinc-600 uppercase leading-none mt-1">Pass: "1234"</span>
+                </div>
+            </div>
         </div>
 
         <div class="flex flex-col items-center">
             <div id="plexStatus" class="text-[9px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
-            <div class="dashboard-card w-full group bg-zinc-900/90 border border-zinc-800 rounded-2xl text-center hover:border-orange-500 transition-all relative">
+            <div class="dashboard-card w-full group bg-zinc-900/90 border border-zinc-800 rounded-2xl text-center hover:border-orange-500 transition-all">
                 <a href="javascript:void(0)" onclick="window.open(PLEX_URL, '_blank')" class="block">
                     <div class="text-3xl mb-2">🎬</div>
                     <div class="text-sm font-medium group-hover:text-orange-400">Plex</div>
                 </a>
-                <a href="mailto:taran@tarankurtz.com?subject=Plex Access Request&body=Please add my Plex Email: " class="absolute bottom-3 text-[10px] text-zinc-600 hover:text-white underline">Request Access</a>
+                <a href="mailto:taran@tarankurtz.com?subject=Plex Access Request&body=Please add my Plex Email: " class="absolute bottom-3 text-[10px] text-zinc-600 hover:text-white underline decoration-zinc-800">Request Access</a>
             </div>
         </div>
 
@@ -86,10 +94,14 @@
         </div>
     </div>
 
-    <div id="adminPanel" class="fixed bottom-20 bg-zinc-900 border border-zinc-800 p-4 rounded-2xl hidden flex-col gap-4 shadow-2xl z-50">
-        <input type="text" id="adminTitleIn" placeholder="Change Main Title..." class="bg-zinc-800 p-2 rounded text-xs border border-zinc-700">
-        <input type="text" id="adminBgIn" placeholder="Background Image URL..." class="bg-zinc-800 p-2 rounded text-xs border border-zinc-700">
-        <button onclick="saveAdminChanges()" class="bg-blue-600 text-[10px] font-bold py-2 rounded uppercase">Apply</button>
+    <div id="adminPanel" class="fixed bottom-20 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl hidden flex-col gap-4 shadow-2xl z-50 w-80">
+        <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Portal Admin</h3>
+        <input type="text" id="adminTitleIn" placeholder="Website Title..." class="bg-zinc-800 p-2 rounded text-xs border border-zinc-700">
+        <div class="flex flex-col gap-1">
+            <label class="text-[10px] text-zinc-500 ml-1 italic font-light">Image name from /images folder:</label>
+            <input type="text" id="adminBgIn" placeholder="e.g. background1.jpg" class="bg-zinc-800 p-2 rounded text-xs border border-zinc-700">
+        </div>
+        <button onclick="saveAdminChanges()" class="bg-blue-600 text-[10px] font-bold py-2 rounded uppercase mt-2">Update Portal</button>
     </div>
 
     <footer class="mt-20 flex flex-col items-center gap-4">
@@ -133,7 +145,6 @@
     </div>
 
     <script>
-        // --- LOAD SETTINGS ---
         window.onload = () => {
             document.getElementById('editableTitle').innerText = localStorage.getItem('portalTitle') || 'Taran Kurtz';
             const bg = localStorage.getItem('portalBg');
@@ -141,48 +152,35 @@
             checkOnlineStatus();
         };
 
-        // --- ENHANCED STATUS CHECKER ---
         async function checkOnlineStatus() {
-            // HFS Check
-            fetch(HFS_URL, { mode: 'no-cors' })
-                .then(() => setStatus('hfsStatus', true))
-                .catch(() => setStatus('hfsStatus', false));
-            
-            // Plex Check - Specific to your identity endpoint
-            fetch('https://plex.tarankurtz.com/identity', { mode: 'no-cors' })
-                .then(() => setStatus('plexStatus', true))
-                .catch(() => setStatus('plexStatus', false));
+            fetch(HFS_URL, { mode: 'no-cors' }).then(() => setStatus('hfsStatus', true)).catch(() => setStatus('hfsStatus', false));
+            fetch('https://plex.tarankurtz.com/identity', { mode: 'no-cors' }).then(() => setStatus('plexStatus', true)).catch(() => setStatus('plexStatus', false));
         }
 
         function setStatus(id, online) {
             const el = document.getElementById(id);
-            el.innerHTML = online ? `<span class="status-dot bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
+            el.innerHTML = online ? `<span class="status-dot bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
         }
 
-        // --- ADMIN & STORAGE ---
         let adminMode = false;
         function verifyAdmin() {
-            if (adminMode) { 
-                adminMode = false; 
-                document.getElementById('adminPanel').classList.add('hidden');
-                return; 
-            }
-            if (prompt("Enter Admin Code:") === ADMIN_PASS) { 
-                adminMode = true; 
-                document.getElementById('adminPanel').classList.remove('hidden');
-                document.getElementById('adminPanel').classList.add('flex');
-            }
+            if (adminMode) { adminMode = false; document.getElementById('adminPanel').classList.add('hidden'); return; }
+            if (prompt("Admin Access:") === ADMIN_PASS) { adminMode = true; document.getElementById('adminPanel').classList.remove('hidden').add('flex'); }
         }
 
         function saveAdminChanges() {
             const t = document.getElementById('adminTitleIn').value;
             const b = document.getElementById('adminBgIn').value;
             if(t) { localStorage.setItem('portalTitle', t); document.getElementById('editableTitle').innerText = t; }
-            if(b) { localStorage.setItem('portalBg', b); document.getElementById('mainBody').style.backgroundImage = `url('${b}')`; }
-            alert("Settings Applied locally.");
+            if(b) {
+                // Construct the full URL using your HFS path
+                const fullBgUrl = b.startsWith('http') ? b : ASSETS_URL + b;
+                localStorage.setItem('portalBg', fullBgUrl);
+                document.getElementById('mainBody').style.backgroundImage = `url('${fullBgUrl}')`;
+            }
+            alert("Updated.");
         }
 
-        // --- SEARCH, MODALS, & PLEX REQUESTS ---
         function doSearch(type) {
             const q = document.getElementById('mainSearch').value;
             if (!q) return;
@@ -190,14 +188,8 @@
         }
         document.getElementById('mainSearch').addEventListener('keypress', (e) => { if (e.key === 'Enter') doSearch('google'); });
 
-        function toggleModal(id) {
-            const m = document.getElementById(id);
-            m.classList.toggle('hidden'); m.classList.toggle('flex');
-            if(id === 'listModal') renderRequests();
-        }
-
+        function toggleModal(id) { const m = document.getElementById(id); m.classList.toggle('hidden'); m.classList.toggle('flex'); if(id === 'listModal') renderRequests(); }
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
-
         function resetSearch() {
             document.getElementById('searchContainer').classList.remove('hidden');
             document.getElementById('drillDownContainer').classList.add('hidden');
@@ -205,7 +197,7 @@
             document.getElementById('modalTitle').innerText = "Request Media";
             document.getElementById('movieSearch').value = "";
             document.getElementById('results').innerHTML = "";
-            document.getElementById('statusMsg').classList.add('hidden');
+            document.getElementById('statusMsg').className = "mt-4 p-3 rounded-xl text-center text-sm hidden";
         }
 
         const searchInput = document.getElementById('movieSearch');
@@ -225,11 +217,8 @@
                 if (!title) return;
                 const div = document.createElement('div');
                 div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 last:border-0';
-                div.innerHTML = `<span class="font-bold text-white">${title}</span> <span class="text-zinc-500 text-xs">(${year}) - ${type === 'tv' ? 'TV' : 'MOVIE'}</span>`;
-                div.onclick = () => {
-                    if (type === 'tv') startTvDrilldown(item.id, title, year);
-                    else runVerification(title, year, "", "MOVIE");
-                };
+                div.innerHTML = `<span class="font-bold text-white text-sm">${title}</span> <span class="text-zinc-500 text-[10px]">(${year}) - ${type === 'tv' ? 'TV' : 'MOVIE'}</span>`;
+                div.onclick = () => type === 'tv' ? startTvDrilldown(item.id, title, year) : runVerification(title, year, "", "MOVIE");
                 resultsDiv.appendChild(div);
             });
         });
@@ -238,15 +227,15 @@
             selectedShow = { id, title, year };
             document.getElementById('searchContainer').classList.add('hidden');
             document.getElementById('drillDownContainer').classList.remove('hidden');
-            document.getElementById('backToSeasonBtn').classList.add('hidden');
+            document.getElementById('modalTitle').innerText = "Select Detail";
             const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_KEY}`);
             const data = await res.json();
             const drillDiv = document.getElementById('drillDownResults');
-            drillDiv.innerHTML = `<div class="p-4 bg-emerald-600/30 hover:bg-emerald-600 cursor-pointer border-b border-emerald-500/50 text-center font-bold text-white" onclick="runVerification('${title}', '${year}', '', 'TV')">Request Entire Series</div>`;
+            drillDiv.innerHTML = `<div class="p-4 bg-emerald-600/30 hover:bg-emerald-600 cursor-pointer border-b border-emerald-500/50 text-center font-bold text-white text-xs" onclick="runVerification('${title}', '${year}', '', 'TV')">Request Entire Series</div>`;
             data.seasons.forEach(s => {
                 const div = document.createElement('div');
-                div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700';
-                div.innerHTML = `<span class="font-bold text-white">${s.name}</span> <span class="text-zinc-500 text-xs">(${s.episode_count} Eps)</span>`;
+                div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-xs';
+                div.innerHTML = `<span class="font-bold text-white">${s.name}</span> <span class="text-zinc-500">(${s.episode_count} Eps)</span>`;
                 div.onclick = () => showEpisodeOptions(s.season_number, s.episode_count);
                 drillDiv.appendChild(div);
             });
@@ -256,16 +245,16 @@
             document.getElementById('backToSeasonBtn').classList.remove('hidden');
             const drillDiv = document.getElementById('drillDownResults');
             const sPad = sNum.toString().padStart(2, '0');
-            drillDiv.innerHTML = `<div class="p-4 bg-blue-900/20 text-blue-400 text-center font-bold border-b border-blue-900/50">Season ${sNum}</div>`;
+            drillDiv.innerHTML = `<div class="p-3 bg-blue-900/20 text-blue-400 text-center font-bold border-b border-blue-900/50 text-xs">Season ${sNum}</div>`;
             const fullS = document.createElement('div');
-            fullS.className = 'p-3 hover:bg-blue-600 cursor-pointer border-b border-zinc-700 text-center font-bold';
+            fullS.className = 'p-3 hover:bg-blue-600 cursor-pointer border-b border-zinc-700 text-center font-bold text-xs';
             fullS.innerText = "Request Entire Season";
             fullS.onclick = () => runVerification(selectedShow.title, selectedShow.year, `[S${sPad}]`, "TV");
             drillDiv.appendChild(fullS);
             for(let i=1; i<=epCount; i++) {
                 const epPad = i.toString().padStart(2, '0');
                 const div = document.createElement('div');
-                div.className = 'p-2 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-sm pl-6 text-zinc-300';
+                div.className = 'p-2 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-[10px] pl-6 text-zinc-300';
                 div.innerText = `Episode ${i} - [S${sPad}E${epPad}]`;
                 div.onclick = () => runVerification(selectedShow.title, selectedShow.year, `[S${sPad}E${epPad}]`, "TV");
                 drillDiv.appendChild(div);
@@ -274,51 +263,47 @@
 
         function backToSeasons() { if(selectedShow) startTvDrilldown(selectedShow.id, selectedShow.title, selectedShow.year); }
 
-        async function runVerification(title, year, tag = "", mediaType = "MOVIE") {
+        async function runVerification(title, year, tag, mediaType) {
             const fullTitle = `${title} (${year}) ${tag} - ${mediaType}`.replace(/\s+/g, ' ').trim();
-            const statusMsg = document.getElementById('statusMsg');
-            statusMsg.className = "mt-4 p-3 rounded-xl text-center text-sm";
-            statusMsg.innerText = "Checking Library...";
-            statusMsg.classList.remove('hidden');
-            const existingRequests = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
-            if (existingRequests.some(r => r.title.toLowerCase() === fullTitle.toLowerCase())) {
-                statusMsg.innerHTML = `⚠️ Already on the list!`;
-                statusMsg.classList.add('bg-yellow-900/20', 'text-yellow-400');
+            const msg = document.getElementById('statusMsg');
+            msg.className = "mt-4 p-3 rounded-xl text-center text-sm bg-zinc-800 text-white";
+            msg.innerText = "Checking Library...";
+            msg.classList.remove('hidden');
+            const reqs = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            if (reqs.some(r => r.title.toLowerCase() === fullTitle.toLowerCase())) {
+                msg.innerText = "⚠️ Already on the list!";
+                msg.classList.add('text-yellow-400');
                 return;
             }
             try {
                 const plexRes = await fetch(`http://plex.tarankurtz.com:32400/search?query=${encodeURIComponent(title)}&X-Plex-Token=${PLEX_TOKEN}`);
                 const text = await plexRes.text();
                 if (text.includes(title) && tag === "") {
-                    statusMsg.innerHTML = `✅ Already on Plex!`;
-                    statusMsg.classList.add('bg-blue-900/20', 'text-blue-400');
+                    msg.innerText = "✅ Already on Plex!";
+                    msg.classList.add('text-blue-400');
                 } else {
-                    addRequest(fullTitle);
-                    statusMsg.innerHTML = `🚀 Added to Queue.`;
-                    statusMsg.classList.add('bg-emerald-900/20', 'text-emerald-400');
+                    reqs.push({ title: fullTitle, id: Date.now() });
+                    localStorage.setItem('mediaRequests', JSON.stringify(reqs));
+                    msg.innerText = "🚀 Added to Queue.";
+                    msg.classList.add('text-emerald-400');
                     setTimeout(() => closeRequestModal(), 1500);
                 }
             } catch (err) {
-                addRequest(fullTitle);
-                statusMsg.innerHTML = "Added (Check offline)";
+                reqs.push({ title: fullTitle, id: Date.now() });
+                localStorage.setItem('mediaRequests', JSON.stringify(reqs));
+                msg.innerText = "Added (Check offline)";
                 setTimeout(() => closeRequestModal(), 1500);
             }
-        }
-
-        function addRequest(fullTitle) {
-            let reqs = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
-            reqs.push({ title: fullTitle, id: Date.now() });
-            localStorage.setItem('mediaRequests', JSON.stringify(reqs));
         }
 
         function renderRequests() {
             const list = document.getElementById('publicRequestList');
             const reqs = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
             if (!list) return;
-            list.innerHTML = reqs.length === 0 ? `<li class="text-zinc-600 italic text-center">No current requests.</li>` : 
-                reqs.map(req => `<li class="flex justify-between items-center bg-zinc-800/50 p-4 rounded-2xl border border-zinc-800 mb-2">
-                    <div class="font-medium text-sm text-zinc-200">${req.title}</div>
-                    ${adminMode ? `<button onclick="removeReq(${req.id})" class="text-xs text-red-400 bg-red-900/20 px-3 py-1 rounded-lg ml-2">Delete</button>` : `<span class="text-[10px] text-zinc-600 uppercase tracking-widest shrink-0 ml-2">Pending</span>`}
+            list.innerHTML = reqs.length === 0 ? `<li class="text-zinc-600 italic text-center text-xs">No current requests.</li>` : 
+                reqs.map(req => `<li class="flex justify-between items-center bg-zinc-800/50 p-3 rounded-xl border border-zinc-800 mb-2">
+                    <div class="font-medium text-[11px] text-zinc-200">${req.title}</div>
+                    ${adminMode ? `<button onclick="removeReq(${req.id})" class="text-[9px] text-red-400 bg-red-900/20 px-2 py-1 rounded">Delete</button>` : `<span class="text-[9px] text-zinc-600 uppercase tracking-widest shrink-0 ml-2">Pending</span>`}
                 </li>`).join('');
         }
 
