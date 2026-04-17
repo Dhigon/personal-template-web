@@ -20,12 +20,12 @@
             background-size: cover; background-position: center; background-attachment: fixed; background-color: #09090b;
         }
 
-        .status-dot { height: 7px; width: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .dashboard-card { height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; transition: all 0.2s ease; z-index: 10; }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .dashboard-card { height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; transition: all 0.2s ease; z-index: 20; }
         
         #mainSearch { outline: none !important; box-shadow: none !important; border: none !important; background-color: transparent !important; color: white !important; }
 
-        /* Footer Help Logic (Strict Iteration 50 Reversion) */
+        /* Footer Help - Hover Only */
         .help-content { opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; pointer-events: none; }
         .help-trigger:hover .help-content { opacity: 1; visibility: visible; transform: translateY(0); }
 
@@ -44,7 +44,7 @@
     </script>
 
     <div class="text-center mb-4">
-        <p class="text-[10px] tracking-[0.3em] uppercase text-zinc-500 font-medium font-bold">tarankurtz.com</p>
+        <p class="text-[10px] tracking-[0.3em] uppercase text-zinc-500 font-bold">tarankurtz.com</p>
         <p class="text-[9px] tracking-widest uppercase text-zinc-600">- A Server for Friends and Family -</p>
     </div>
 
@@ -52,7 +52,10 @@
 
     <div class="w-full max-w-2xl mb-12">
         <div class="flex items-center bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-full px-2 py-2 shadow-xl focus-within:border-zinc-700 transition-all">
-            <input type="text" id="mainSearch" onkeydown="if(event.key==='Enter') doSearch('google')" placeholder="Search or ask AI..." class="flex-1 bg-transparent py-2 px-6 text-base text-white outline-none">
+            <input type="text" id="mainSearch" 
+                   onkeydown="if(event.key==='Enter') doSearch('google')" 
+                   placeholder="Search or ask AI..." 
+                   class="flex-1 bg-transparent py-2 px-6 text-base text-white outline-none">
             <button onclick="doSearch('ai')" class="p-2.5 bg-blue-600 hover:bg-blue-500 rounded-full text-white mr-1 transition-transform active:scale-95">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </button>
@@ -61,44 +64,34 @@
 
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 w-full max-w-6xl mb-12">
         
-        <div class="flex flex-col items-center">
-            <div id="hfsStatus" class="text-[8px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
-            <div onclick="window.location.href=HFS_URL" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-500">
-                <div class="text-2xl mb-1">📂</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">Files</div>
-                <div class="absolute bottom-2 opacity-60 text-[8px] font-bold uppercase tracking-tighter text-zinc-400">Guest: 1234</div>
-            </div>
+        <div onclick="window.location.href=HFS_URL" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-500">
+            <div id="hfsStatus" class="absolute top-2 text-[8px] uppercase tracking-tighter text-zinc-500 italic">Checking...</div>
+            <div class="text-2xl mb-1">📂</div>
+            <div class="text-[11px] uppercase tracking-widest font-bold">Files</div>
+            <div class="absolute bottom-2 opacity-60 text-[8px] font-bold uppercase tracking-tighter text-zinc-400">Guest: 1234</div>
         </div>
 
-        <div class="flex flex-col items-center">
-            <div id="plexStatus" class="text-[8px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
-            <div onclick="window.open(PLEX_URL, '_blank')" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-orange-500">
-                <div class="text-2xl mb-1">🎬</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">Plex</div>
-                <span onclick="event.stopPropagation(); requestPlexAccess();" class="absolute bottom-2 text-[8px] text-zinc-500 underline uppercase hover:text-orange-400 z-[60] pointer-events-auto">Request Access</span>
-            </div>
+        <div onclick="window.open(PLEX_URL, '_blank')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-orange-500">
+            <div id="plexStatus" class="absolute top-2 text-[8px] uppercase tracking-tighter text-zinc-500 italic">Checking...</div>
+            <div class="text-2xl mb-1">🎬</div>
+            <div class="text-[11px] uppercase tracking-widest font-bold">Plex</div>
+            <span onclick="event.stopPropagation(); requestPlexAccess();" class="absolute bottom-2 text-[8px] text-zinc-500 underline uppercase hover:text-orange-400 z-50">Request Access</span>
         </div>
 
-        <div class="flex flex-col items-center pt-[13px]">
-            <div onclick="window.open('https://youtube.com', '_blank')" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-red-600">
-                <div class="text-2xl mb-1">📺</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">YouTube</div>
-            </div>
+        <div onclick="window.open('https://youtube.com', '_blank')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-red-600">
+            <div class="text-2xl mb-1">📺</div>
+            <div class="text-[11px] uppercase tracking-widest font-bold">YouTube</div>
         </div>
 
-        <div class="flex flex-col items-center pt-[13px]">
-            <div onclick="window.open('https://remotedesktop.google.com/access', '_blank')" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-400">
-                <div class="text-2xl mb-1">🖥️</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">Remote</div>
-            </div>
+        <div onclick="window.open('https://remotedesktop.google.com/access', '_blank')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-400">
+            <div class="text-2xl mb-1">🖥️</div>
+            <div class="text-[11px] uppercase tracking-widest font-bold">Remote</div>
         </div>
 
-        <div class="flex flex-col items-center pt-[13px]">
-            <div onclick="toggleModal('requestModal')" class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-emerald-500">
-                <div class="text-2xl mb-1">📥</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">Request</div>
-                <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[9px] text-zinc-600 underline uppercase tracking-widest hover:text-white z-[60] pointer-events-auto">View List</span>
-            </div>
+        <div onclick="toggleModal('requestModal')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-emerald-500">
+            <div class="text-2xl mb-1">📥</div>
+            <div class="text-[11px] uppercase tracking-widest font-bold">Request</div>
+            <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[9px] text-zinc-600 underline uppercase tracking-widest hover:text-white z-50">View List</span>
         </div>
 
     </div>
@@ -157,18 +150,34 @@
         })();
 
         async function checkOnlineStatus() {
-            fetch(HFS_URL, { mode: 'no-cors', cache: 'no-store' }).then(() => setStatus('hfsStatus', true)).catch(() => setStatus('hfsStatus', false));
-            fetch(NAS_PHYSICAL_IP, { mode: 'no-cors', cache: 'no-store' }).then(() => setStatus('plexStatus', true)).catch(() => setStatus('plexStatus', false));
+            // HFS Check
+            fetch(HFS_URL, { mode: 'no-cors', cache: 'no-store' })
+                .then(() => setStatus('hfsStatus', true))
+                .catch(() => setStatus('hfsStatus', false));
+            
+            // Plex/NAS Check
+            fetch(NAS_PHYSICAL_IP, { mode: 'no-cors', cache: 'no-store' })
+                .then(() => setStatus('plexStatus', true))
+                .catch(() => setStatus('plexStatus', false));
         }
 
         function setStatus(id, online) {
             const el = document.getElementById(id);
-            if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
+            if (el) {
+                el.innerHTML = online 
+                    ? `<span class="status-dot bg-green-500"></span> Online` 
+                    : `<span class="status-dot bg-red-500"></span> Offline`;
+            }
         }
 
         function doSearch(type) {
-            const q = document.getElementById('mainSearch').value; if(!q) return;
-            window.location.href = type === 'google' ? `https://google.com/search?q=${encodeURIComponent(q)}` : `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
+            const q = document.getElementById('mainSearch').value;
+            if (!q) return;
+            if (type === 'google') {
+                window.location.href = `https://google.com/search?q=${encodeURIComponent(q)}`;
+            } else {
+                window.location.href = `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
+            }
         }
 
         document.getElementById('movieSearch').addEventListener('input', async (e) => {
@@ -231,4 +240,40 @@
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
         function resetSearch() { document.getElementById('movieSearch').value = ''; document.getElementById('searchContainer').classList.remove('hidden'); document.getElementById('drillDownContainer').classList.add('hidden'); document.getElementById('results').classList.add('hidden'); document.getElementById('statusMsg').classList.add('hidden'); selectedShow = null; }
         function backToSeasons() { if(selectedShow) startTvFlow(selectedShow.id, selectedShow.title, selectedShow.year); }
-        function requestPlex
+        
+        function requestPlexAccess() { 
+            const email = prompt("Enter your Plex email:"); 
+            if (email) window.location.href = `mailto:taran.kurtz@gmail.com?subject=Plex Access Request&body=Requesting access for: ${email}`; 
+        }
+
+        function renderRequests() {
+            const list = document.getElementById('publicRequestList');
+            const data = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            list.innerHTML = data.length === 0 ? '<li class="text-zinc-600 italic text-center text-xs py-10">Queue is empty</li>' :
+                data.map(req => `<li class="flex justify-between items-center bg-zinc-800/40 p-3 rounded-xl border border-zinc-800 text-[11px]"><span>${req.title}</span>${adminMode ? `<button onclick="removeReq(${req.id})" class="text-red-500 px-2 font-bold">✕</button>` : ''}</li>`).join('');
+            if(adminMode) document.getElementById('adminListControls').classList.remove('hidden');
+        }
+
+        function verifyAdmin() { 
+            if (prompt("Code:") === ADMIN_PASS) { 
+                adminMode = true; 
+                alert("Admin Mode Engaged");
+                renderRequests(); 
+            } 
+        }
+
+        function removeReq(id) { 
+            let data = JSON.parse(localStorage.getItem('mediaRequests') || '[]'); 
+            localStorage.setItem('mediaRequests', JSON.stringify(data.filter(r => r.id !== id))); 
+            renderRequests(); 
+        }
+
+        function clearAllRequests() { 
+            if(confirm("Clear everything?")) { 
+                localStorage.setItem('mediaRequests', '[]'); 
+                renderRequests(); 
+            } 
+        }
+    </script>
+</body>
+</html>
