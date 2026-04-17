@@ -6,14 +6,19 @@
     <title>Taran's Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom scrollbar for a cleaner look */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-6 font-sans">
 
-    <h1 class="text-4xl font-light tracking-widest mb-10">TARAN KURTZ</h1>
+    <script>
+        const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
+        const PLEX_TOKEN = '5msRNVbv92Z_oVfyBcrv';
+        const PLEX_IP = '107.220.202.150'; 
+    </script>
+
+    <h1 class="text-4xl font-light tracking-widest mb-10 text-center">TARAN KURTZ</h1>
 
     <div class="w-full max-w-xl mb-12">
         <form action="https://google.com/search" method="get" class="relative">
@@ -22,7 +27,7 @@
         </form>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 w-full max-w-4xl mb-12">
         <a href="http://transfer.tarankurtz.com" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-blue-500 transition-all">
             <div class="text-3xl mb-2">📂</div>
             <div class="text-sm font-medium group-hover:text-blue-400">Files</div>
@@ -33,67 +38,72 @@
             <div class="text-sm font-medium group-hover:text-blue-400">Plex</div>
         </a>
 
-        <button onclick="toggleModal()" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-blue-600 transition-all">
+        <button onclick="toggleModal('requestModal')" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-emerald-500 transition-all">
             <div class="text-3xl mb-2">📥</div>
-            <div class="text-sm font-medium group-hover:text-blue-400">Request Media</div>
+            <div class="text-sm font-medium group-hover:text-emerald-400">Request</div>
+        </button>
+
+        <button onclick="toggleModal('listModal')" class="group bg-zinc-900 border border-zinc-800 p-6 rounded-2xl text-center hover:border-yellow-500 transition-all">
+            <div class="text-3xl mb-2">📋</div>
+            <div class="text-sm font-medium group-hover:text-yellow-400">View List</div>
         </button>
     </div>
 
-    <div id="requestModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div id="requestModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
         <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl relative">
-            <button onclick="toggleModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
+            <button onclick="toggleModal('requestModal')" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
+            <h2 class="text-xl font-semibold mb-6 text-center text-emerald-400">Media Request</h2>
             
-            <h2 class="text-xl font-semibold mb-6 text-center text-blue-400">Media Request</h2>
-            
-            <form action="https://formspree.io/f/your_form_id" method="POST" class="space-y-4">
-                <input type="hidden" name="_subject" value="New Media Request from Portal">
-                
-                <div>
-                    <input type="text" name="name" placeholder="Your Name" required
-                        class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500">
-                </div>
+            <div class="relative">
+                <input type="text" id="movieSearch" placeholder="Search Movie or TV Name..." autocomplete="off"
+                    class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 focus:outline-none focus:border-emerald-500">
+                <div id="results" class="absolute w-full mt-2 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden hidden z-50 shadow-2xl"></div>
+            </div>
 
-                <div class="relative">
-                    <input type="text" id="movieSearch" name="media_title" placeholder="Search Movie or TV Show..." autocomplete="off" required
-                        class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 focus:outline-none focus:border-blue-500">
-                    <div id="results" class="absolute w-full mt-2 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden hidden z-50"></div>
-                </div>
-
-                <button type="submit" 
-                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-blue-900/20">
-                    Submit Request
-                </button>
-            </form>
+            <div id="statusMsg" class="mt-4 p-3 rounded-xl text-center text-sm hidden"></div>
         </div>
     </div>
 
-    <footer class="mt-20 text-zinc-600 text-xs tracking-widest uppercase">
-        Private Server &copy; 2026 | 107.220.202.150
+    <div id="listModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl relative">
+            <button onclick="toggleModal('listModal')" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
+            <h2 class="text-xl font-semibold mb-6 text-center text-yellow-400">Pending Requests</h2>
+            <ul id="publicRequestList" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                </ul>
+        </div>
+    </div>
+
+    <footer onclick="toggleAdminView()" class="mt-20 text-zinc-700 text-xs tracking-widest uppercase cursor-pointer hover:text-zinc-500 transition-colors">
+        Private Server &copy; 2026 | <span id="adminStatus">Admin Dashboard</span>
     </footer>
 
     <script>
-        // TOGGLE MODAL VISIBILITY
-        function toggleModal() {
-            const modal = document.getElementById('requestModal');
-            modal.classList.toggle('hidden');
-            modal.classList.toggle('flex');
+        let adminMode = false;
+
+        function toggleModal(id) {
+            const m = document.getElementById(id);
+            m.classList.toggle('hidden');
+            m.classList.toggle('flex');
+            if(id === 'listModal') renderRequests();
         }
 
-        // PREDICTIVE SEARCH LOGIC (TMDB API)
-        const api_key = 'YOUR_TMDB_API_KEY_HERE'; // Get one at themoviedb.org
+        function toggleAdminView() {
+            adminMode = !adminMode;
+            document.getElementById('adminStatus').innerText = adminMode ? "ADMIN MODE: ON" : "Admin Dashboard";
+            renderRequests();
+        }
+
+        // SEARCH & VERIFICATION LOGIC
         const searchInput = document.getElementById('movieSearch');
         const resultsDiv = document.getElementById('results');
+        const statusMsg = document.getElementById('statusMsg');
 
         searchInput.addEventListener('input', async (e) => {
             const query = e.target.value;
-            if (query.length < 3) {
-                resultsDiv.classList.add('hidden');
-                return;
-            }
+            if (query.length < 3) { resultsDiv.classList.add('hidden'); return; }
 
-            // Search both Movies and TV Shows
-            const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${api_key}&query=${query}`);
-            const data = await response.json();
+            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${query}`);
+            const data = await res.json();
 
             resultsDiv.innerHTML = '';
             resultsDiv.classList.remove('hidden');
@@ -106,20 +116,78 @@
                 const div = document.createElement('div');
                 div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 last:border-0';
                 div.innerHTML = `<span class="font-bold">${title}</span> <span class="text-zinc-400 text-sm">(${year})</span>`;
-                div.onclick = () => {
-                    searchInput.value = `${title} (${year})`;
-                    resultsDiv.classList.add('hidden');
-                };
+                div.onclick = () => runVerification(title, year);
                 resultsDiv.appendChild(div);
             });
         });
 
-        // Close dropdown if clicking outside
-        document.addEventListener('click', (e) => {
-            if (!resultsDiv.contains(e.target) && e.target !== searchInput) {
-                resultsDiv.classList.add('hidden');
+        async function runVerification(title, year) {
+            resultsDiv.classList.add('hidden');
+            statusMsg.classList.remove('hidden', 'bg-red-900/20', 'text-red-400', 'bg-blue-900/20', 'text-blue-400', 'bg-yellow-900/20', 'text-yellow-400');
+            statusMsg.innerText = "Checking availability...";
+
+            // 1. Check local Request List first
+            const existingRequests = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            const isAlreadyRequested = existingRequests.some(r => r.title.toLowerCase() === title.toLowerCase());
+
+            if (isAlreadyRequested) {
+                statusMsg.innerHTML = `⚠️ "${title}" is already on the request list!`;
+                statusMsg.classList.add('bg-yellow-900/20', 'text-yellow-400');
+                return;
             }
-        });
+
+            // 2. Check Plex
+            try {
+                const plexRes = await fetch(`http://${PLEX_IP}:32400/search?query=${encodeURIComponent(title)}&X-Plex-Token=${PLEX_TOKEN}`);
+                const text = await plexRes.text();
+                
+                if (text.includes(title)) {
+                    statusMsg.innerHTML = `✅ "${title}" is already on Plex!`;
+                    statusMsg.classList.add('bg-blue-900/20', 'text-blue-400');
+                } else {
+                    addRequest(title, year);
+                    statusMsg.innerHTML = `🚀 Success! Added to the queue.`;
+                    statusMsg.classList.add('bg-emerald-900/20', 'text-emerald-400');
+                    setTimeout(() => toggleModal('requestModal'), 2000);
+                }
+            } catch (err) {
+                addRequest(title, year); // Add anyway if Plex is down
+                statusMsg.innerHTML = "Added (Plex connection offline)";
+            }
+        }
+
+        function addRequest(title, year) {
+            let requests = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            requests.push({ title, year, id: Date.now() });
+            localStorage.setItem('mediaRequests', JSON.stringify(requests));
+        }
+
+        function renderRequests() {
+            const list = document.getElementById('publicRequestList');
+            const requests = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            
+            if (requests.length === 0) {
+                list.innerHTML = `<li class="text-zinc-600 italic text-center">The list is currently empty.</li>`;
+                return;
+            }
+
+            list.innerHTML = requests.map(req => `
+                <li class="flex justify-between items-center bg-zinc-800/50 p-4 rounded-2xl border border-zinc-800">
+                    <div>
+                        <div class="font-medium">${req.title}</div>
+                        <div class="text-zinc-500 text-xs">${req.year}</div>
+                    </div>
+                    ${adminMode ? `<button onclick="removeReq(${req.id})" class="text-xs text-red-400 hover:text-white bg-red-900/20 px-3 py-1 rounded-lg">Delete</button>` : `<span class="text-[10px] text-zinc-600 uppercase tracking-widest">Pending</span>`}
+                </li>
+            `).join('');
+        }
+
+        function removeReq(id) {
+            let requests = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            requests = requests.filter(r => r.id !== id);
+            localStorage.setItem('mediaRequests', JSON.stringify(requests));
+            renderRequests();
+        }
     </script>
 </body>
 </html>
