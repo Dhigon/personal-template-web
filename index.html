@@ -14,9 +14,10 @@
         #mainBody { background-size: cover; background-position: center; background-attachment: fixed; transition: background-image 0.5s ease-in-out; background-color: #09090b; }
         .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .dashboard-card { height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; }
-        /* Request #2: Fix White Box on Search */
         #mainSearch:focus { outline: none !important; border-color: transparent !important; box-shadow: none !important; }
         .modal-fixed-height { height: 500px; display: flex; flex-direction: column; }
+        .help-trigger:hover .help-content { opacity: 1; visibility: visible; transform: translateY(0); }
+        .help-content { opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s ease; pointer-events: none; }
     </style>
 </head>
 <body id="mainBody" class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-6 font-sans">
@@ -25,7 +26,7 @@
         const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
         const PLEX_TOKEN = '5msRNVbv92Z_oVfyBcrv';
         const PLEX_URL = 'http://plex.tarankurtz.com:32400'; 
-        const NAS_LOCAL_IP = 'http://192.168.1.69:32400'; 
+        const NAS_IP = 'http://192.168.1.69:8000'; // Target machine port
         const HFS_URL = 'https://transfer.tarankurtz.com:8443'; 
         const ASSETS_URL = 'https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/';
         const ADMIN_PASS = 'Potatoes2!'; 
@@ -40,7 +41,7 @@
 
     <div class="w-full max-w-2xl mb-12">
         <div class="flex items-center bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-full px-2 py-2 shadow-xl focus-within:border-zinc-600 transition-all">
-            <input type="text" id="mainSearch" onkeydown="if(event.key==='Enter') doSearch('google')" placeholder="Search or ask AI..." class="flex-1 bg-transparent py-3 px-6 text-lg text-white outline-none ring-0 focus:ring-0">
+            <input type="text" id="mainSearch" onkeydown="if(event.key==='Enter') doSearch('google')" placeholder="Search or ask AI..." class="flex-1 bg-transparent py-3 px-6 text-lg text-white outline-none">
             <button onclick="doSearch('ai')" class="p-3 bg-blue-600 hover:bg-blue-500 rounded-full text-white mr-1 transition-transform active:scale-90">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </button>
@@ -74,12 +75,14 @@
 
     <div id="requestModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center z-[100] p-4">
         <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative modal-fixed-height">
-            <button onclick="closeRequestModal()" class="absolute top-4 right-4 text-zinc-500">✕</button>
+            <button onclick="closeRequestModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
             <h2 class="text-xl font-semibold mb-6 text-center text-emerald-400 uppercase tracking-widest">Media Request</h2>
+            
             <div id="searchContainer" class="flex flex-col flex-1 overflow-hidden">
-                <input type="text" id="movieSearch" placeholder="Search Movie/TV..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none">
+                <input type="text" id="movieSearch" placeholder="Search Movie/TV..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-emerald-500">
                 <div id="results" class="mt-4 bg-zinc-800 border border-zinc-700 rounded-xl hidden overflow-y-auto"></div>
             </div>
+
             <div id="drillDownContainer" class="hidden flex flex-col flex-1 overflow-hidden">
                 <div id="drillDownResults" class="bg-zinc-800 border border-zinc-700 rounded-xl overflow-y-auto flex-1"></div>
                 <div class="flex gap-2 mt-4">
@@ -87,15 +90,17 @@
                     <button onclick="resetSearch()" class="flex-1 py-2 text-xs text-red-500 border border-red-900/40 rounded-lg uppercase">Restart</button>
                 </div>
             </div>
-            <div id="statusMsg" class="mt-4 p-3 rounded-xl text-center text-sm hidden"></div>
+            
+            <div id="statusMsg" class="mt-4 p-3 rounded-xl text-center text-sm hidden font-bold"></div>
+
             <button onclick="closeRequestModal(); openListView();" class="mt-6 w-full py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-[10px] text-zinc-400 hover:text-emerald-400 uppercase tracking-widest transition-all">
-                View Current Queue
+                View Current Request Queue
             </button>
         </div>
     </div>
 
     <div id="listModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center z-[100] p-4">
-        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative flex flex-col" style="height: 500px;">
+        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative flex flex-col modal-fixed-height">
             <button onclick="toggleModal('listModal')" class="absolute top-4 right-4 text-zinc-500">✕</button>
             <h2 class="text-xl font-semibold mb-6 text-center text-yellow-400 uppercase">Current Queue</h2>
             <ul id="publicRequestList" class="space-y-2 overflow-y-auto flex-1 mb-4 pr-2"></ul>
@@ -104,44 +109,49 @@
     </div>
 
     <div id="adminPanel" class="fixed bottom-20 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl hidden flex-col gap-4 shadow-2xl z-50 w-80">
-        <h3 class="text-xs font-bold text-zinc-500 uppercase">Admin Dashboard</h3>
         <input type="text" id="adminTitleIn" placeholder="Website Title..." class="w-full bg-zinc-800 p-2 text-xs rounded border border-zinc-700">
-        <input type="text" id="adminBgIn" placeholder="Background Name (No .jpg)..." class="w-full bg-zinc-800 p-2 text-xs rounded border border-zinc-700">
-        <button onclick="saveAdminChanges()" class="bg-blue-600 py-2 rounded text-[10px] font-bold uppercase">Apply & Sync</button>
+        <input type="text" id="adminBgIn" placeholder="Background Name..." class="w-full bg-zinc-800 p-2 text-xs rounded border border-zinc-700">
+        <button onclick="saveAdminChanges()" class="bg-blue-600 py-2 rounded text-[10px] font-bold uppercase">Apply Changes</button>
     </div>
 
-    <footer class="mt-20">
+    <footer class="mt-20 flex flex-col items-center gap-6">
+        <div class="relative help-trigger">
+            <span class="text-zinc-600 text-[10px] tracking-widest cursor-help uppercase hover:text-zinc-400">Mobile Setup Guide</span>
+            <div class="help-content absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-64 bg-zinc-900 border border-zinc-800 p-4 rounded-2xl shadow-2xl z-50">
+                <h4 class="text-[10px] font-bold text-emerald-400 uppercase mb-2">Install as App</h4>
+                <div class="text-[9px] text-zinc-400 space-y-2 leading-relaxed">
+                    <p><strong>iOS:</strong> Tap <span class="text-white">Share</span> then <span class="text-white">"Add to Home Screen"</span>.</p>
+                    <p><strong>Android:</strong> Tap <span class="text-white">Menu (⋮)</span> then <span class="text-white">"Install App"</span>.</p>
+                </div>
+            </div>
+        </div>
         <div onclick="verifyAdmin()" class="text-zinc-800 text-[9px] tracking-[0.4em] cursor-pointer hover:text-zinc-500 uppercase">Private Admin Dashboard</div>
     </footer>
 
     <script>
-        let adminMode = false;
-
-        function updateBackground(url) {
-            if(!url) return;
-            document.getElementById('mainBody').style.backgroundImage = `url('${url}')`;
-        }
+        let adminMode = false; let selectedShow = null;
 
         (function init() {
-            // Request #1 Fix: Midnight Reset Logic
             const lastVisit = localStorage.getItem('portal_last_visit');
             const today = new Date().toDateString();
             if(lastVisit && lastVisit !== today) {
-                localStorage.removeItem('portalTitle');
-                localStorage.removeItem('portalBg');
+                localStorage.removeItem('portalTitle'); localStorage.removeItem('portalBg');
             }
             localStorage.setItem('portal_last_visit', today);
 
             const savedTitle = localStorage.getItem('portalTitle') || "Taran's Portal";
             document.getElementById('editableTitle').innerText = savedTitle;
-            updateBackground(localStorage.getItem('portalBg'));
+            const bg = localStorage.getItem('portalBg');
+            if(bg) document.getElementById('mainBody').style.backgroundImage = `url('${bg}')`;
             
             checkOnlineStatus();
         })();
 
         async function checkOnlineStatus() {
+            // Check HFS
             fetch(HFS_URL, { mode: 'no-cors' }).then(() => setStatus('hfsStatus', true)).catch(() => setStatus('hfsStatus', false));
-            fetch(NAS_LOCAL_IP, { mode: 'no-cors' }).then(() => setStatus('plexStatus', true)).catch(() => setStatus('plexStatus', false));
+            // Check NAS/Plex (Question 1 check)
+            fetch(NAS_IP, { mode: 'no-cors' }).then(() => setStatus('plexStatus', true)).catch(() => setStatus('plexStatus', false));
         }
 
         function setStatus(id, online) {
@@ -149,19 +159,67 @@
             if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
         }
 
-        // Request #3 Fix: Ensuring text is sent to Gemini correctly
         function doSearch(type) {
             const q = document.getElementById('mainSearch').value;
             if(!q) return;
-            if(type === 'google') {
-                window.location.href = `https://google.com/search?q=${encodeURIComponent(q)}`;
-            } else {
-                window.location.href = `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
-            }
+            window.location.href = type === 'google' ? `https://google.com/search?q=${encodeURIComponent(q)}` : `https://gemini.google.com/app?q=${encodeURIComponent(q)}`;
         }
 
-        // Admin Logic
-        function verifyAdmin() { if (prompt("Code:") === ADMIN_PASS) { adminMode = true; document.getElementById('adminPanel').classList.toggle('hidden'); document.getElementById('adminPanel').classList.toggle('flex'); } }
+        // --- Reverted Request Logic (Request #2) ---
+        document.getElementById('movieSearch').addEventListener('input', async (e) => {
+            const val = e.target.value; if (val.length < 3) { document.getElementById('results').classList.add('hidden'); return; }
+            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${val}`);
+            const data = await res.json();
+            const results = document.getElementById('results'); results.innerHTML = ''; results.classList.remove('hidden');
+            data.results.slice(0, 5).forEach(item => {
+                const title = item.title || item.name; const year = (item.release_date || item.first_air_date || '').split('-')[0];
+                const div = document.createElement('div'); div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-xs';
+                div.innerHTML = `<b>${title}</b> (${year})`;
+                div.onclick = () => item.media_type === 'tv' ? startTvFlow(item.id, title, year) : runVerification(title, year, "", "MOVIE");
+                results.appendChild(div);
+            });
+        });
+
+        async function startTvFlow(id, title, year) {
+            selectedShow = { id, title, year };
+            document.getElementById('searchContainer').classList.add('hidden');
+            document.getElementById('drillDownContainer').classList.remove('hidden');
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_KEY}`);
+            const data = await res.json();
+            const box = document.getElementById('drillDownResults');
+            box.innerHTML = `<div class="p-3 bg-emerald-600/20 text-center text-xs cursor-pointer mb-2" onclick="runVerification('${title}', '${year}', '', 'TV')">Request Full Series</div>`;
+            data.seasons.forEach(s => {
+                const d = document.createElement('div'); d.className = 'p-3 hover:bg-zinc-700 border-b border-zinc-700 text-xs cursor-pointer';
+                d.innerText = s.name;
+                d.onclick = () => {
+                    document.getElementById('backToSeasonBtn').classList.remove('hidden');
+                    box.innerHTML = `<div class="p-3 bg-blue-600/20 text-center text-xs cursor-pointer mb-2" onclick="runVerification('${title}', '${year}', '[S${s.season_number}]', 'TV')">Season ${s.season_number}</div>`;
+                    for(let i=1; i<=s.episode_count; i++) {
+                        const ep = document.createElement('div'); ep.className = 'p-2 hover:bg-zinc-700 border-b border-zinc-700 text-[10px] pl-6 cursor-pointer';
+                        ep.innerText = `Episode ${i}`;
+                        ep.onclick = () => runVerification(title, year, `[S${s.season_number}E${i.toString().padStart(2,'0')}]`, "TV");
+                        box.appendChild(ep);
+                    }
+                };
+                box.appendChild(d);
+            });
+        }
+
+        async function runVerification(title, year, tag, type) {
+            const entry = `${title} (${year}) ${tag} - ${type}`.trim();
+            const msg = document.getElementById('statusMsg');
+            msg.className = "mt-4 p-3 rounded-xl text-center text-sm block bg-zinc-800 text-white";
+            msg.innerText = "Processing..."; msg.classList.remove('hidden');
+
+            let list = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            if(!list.some(r => r.title === entry)) {
+                list.push({ title: entry, id: Date.now() });
+                localStorage.setItem('mediaRequests', JSON.stringify(list));
+                msg.innerText = "🚀 Added to Queue!"; msg.classList.add('text-emerald-400');
+            } else {
+                msg.innerText = "⚠️ Already in list!"; msg.classList.add('text-yellow-400');
+            }
+        }
 
         function saveAdminChanges() {
             const t = document.getElementById('adminTitleIn').value;
@@ -170,18 +228,17 @@
             if(b) { 
                 const fullUrl = `${ASSETS_URL}${encodeURIComponent(b.trim())}.jpg`; 
                 localStorage.setItem('portalBg', fullUrl); 
-                updateBackground(fullUrl); 
+                document.getElementById('mainBody').style.backgroundImage = `url('${fullUrl}')`; 
             }
-            alert("Updated locally. (Midnight reset is active)");
+            alert("Updated!");
         }
 
-        // --- Standard UI Helpers ---
         function toggleModal(id) { const m = document.getElementById(id); m.classList.toggle('hidden'); m.classList.toggle('flex'); }
         function openListView() { renderRequests(); if(adminMode) document.getElementById('adminListControls').classList.remove('hidden'); toggleModal('listModal'); }
         function renderRequests() {
             const list = document.getElementById('publicRequestList');
             const data = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
-            list.innerHTML = data.length === 0 ? '<li class="text-zinc-600 italic text-center text-xs">Queue is empty</li>' :
+            list.innerHTML = data.length === 0 ? '<li class="text-zinc-600 italic text-center text-xs">Empty</li>' :
                 data.map(req => `<li class="flex justify-between items-center bg-zinc-800/40 p-3 rounded-xl border border-zinc-800 text-[11px]"><span>${req.title}</span>${adminMode ? `<button onclick="removeReq(${req.id})" class="text-red-500">✕</button>` : ''}</li>`).join('');
         }
         function removeReq(id) {
@@ -189,38 +246,18 @@
             localStorage.setItem('mediaRequests', JSON.stringify(data.filter(r => r.id !== id)));
             renderRequests();
         }
+        function clearAllRequests() { if(confirm("Clear all?")) { localStorage.setItem('mediaRequests', '[]'); renderRequests(); } }
+        function verifyAdmin() { if (prompt("Code:") === ADMIN_PASS) { adminMode = true; document.getElementById('adminPanel').classList.toggle('hidden'); document.getElementById('adminPanel').classList.toggle('flex'); } }
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
         function resetSearch() { 
             document.getElementById('searchContainer').classList.remove('hidden'); 
             document.getElementById('drillDownContainer').classList.add('hidden'); 
             document.getElementById('movieSearch').value = ""; 
             document.getElementById('results').classList.add('hidden'); 
+            document.getElementById('statusMsg').classList.add('hidden');
             selectedShow = null; 
         }
-
-        // TMDB Logic (Omitted for space, same as Iteration 41)
-        document.getElementById('movieSearch').addEventListener('input', async (e) => {
-            const val = e.target.value; if (val.length < 3) return;
-            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${val}`);
-            const data = await res.json();
-            const results = document.getElementById('results'); results.innerHTML = ''; results.classList.remove('hidden');
-            data.results.slice(0, 5).forEach(item => {
-                const title = item.title || item.name; const year = (item.release_date || item.first_air_date || '').split('-')[0];
-                const div = document.createElement('div'); div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-xs';
-                div.innerHTML = `<b>${title}</b> (${year})`;
-                div.onclick = () => runVerification(title, year, "", "MOVIE");
-                results.appendChild(div);
-            });
-        });
-        async function runVerification(title, year, tag, type) {
-            const entry = `${title} (${year}) ${tag} - ${type}`.trim();
-            let list = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
-            if(!list.some(r => r.title === entry)) {
-                list.push({ title: entry, id: Date.now() });
-                localStorage.setItem('mediaRequests', JSON.stringify(list));
-                alert("Request Added!");
-            }
-        }
+        function backToSeasons() { if(selectedShow) startTvFlow(selectedShow.id, selectedShow.title, selectedShow.year); }
     </script>
 </body>
 </html>
