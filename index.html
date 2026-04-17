@@ -22,11 +22,8 @@
         }
 
         .status-dot { height: 7px; width: 7px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        
-        /* Request #1: Smaller Buttons/Cards */
         .dashboard-card { height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; }
         
-        /* VAULTED: Search Bar CSS */
         #mainSearch { outline: none !important; box-shadow: none !important; border: none !important; background-color: transparent !important; }
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
@@ -72,24 +69,27 @@
         <div onclick="window.location.href=HFS_URL" class="flex flex-col items-center">
             <div id="hfsStatus" class="text-[8px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
             <div class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-500 transition-all">
-                <div class="text-2xl mb-1">📂</div><div class="text-xs uppercase tracking-widest">Files</div>
-                <div class="absolute bottom-2 opacity-40 text-[7px] font-bold uppercase tracking-tighter text-zinc-400">Guest: 1234</div>
+                <div class="text-2xl mb-1">📂</div>
+                <div class="text-sm uppercase tracking-widest">Files</div>
+                <div class="absolute bottom-2 opacity-60 text-[9px] font-bold uppercase tracking-tighter text-zinc-400">User: guest | Pass: 1234</div>
             </div>
         </div>
 
         <div onclick="window.open(PLEX_URL, '_blank')" class="flex flex-col items-center">
             <div id="plexStatus" class="text-[8px] uppercase tracking-tighter mb-1 text-zinc-500 italic">Checking...</div>
             <div class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-orange-500 transition-all">
-                <div class="text-2xl mb-1">🎬</div><div class="text-xs uppercase tracking-widest">Plex</div>
-                <span onclick="event.stopPropagation(); requestPlexAccess();" class="absolute bottom-2 text-[7px] text-zinc-500 underline uppercase hover:text-orange-400">Request Access</span>
+                <div class="text-2xl mb-1">🎬</div>
+                <div class="text-sm uppercase tracking-widest">Plex</div>
+                <span onclick="event.stopPropagation(); requestPlexAccess();" class="absolute bottom-2 text-[9px] text-zinc-500 underline uppercase hover:text-orange-400">Request Access</span>
             </div>
         </div>
 
         <div onclick="toggleModal('requestModal')" class="flex flex-col items-center">
             <div class="text-[8px] opacity-0 mb-1">.</div>
             <div class="dashboard-card w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-emerald-500 transition-all">
-                <div class="text-2xl mb-1">📥</div><div class="text-xs uppercase tracking-widest">Request</div>
-                <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[8px] text-zinc-600 underline uppercase tracking-widest hover:text-white">View List</span>
+                <div class="text-2xl mb-1">📥</div>
+                <div class="text-sm uppercase tracking-widest">Request</div>
+                <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[10px] text-zinc-600 underline uppercase tracking-widest hover:text-white">View List</span>
             </div>
         </div>
     </div>
@@ -104,10 +104,13 @@
             </div>
             <div id="drillDownContainer" class="hidden flex flex-col flex-1 overflow-hidden">
                 <div id="drillDownResults" class="bg-zinc-800 border border-zinc-700 rounded-xl overflow-y-auto flex-1"></div>
-                <div class="flex gap-2 mt-4"><button id="backToSeasonBtn" onclick="backToSeasons()" class="hidden flex-1 py-2 text-xs text-blue-400 border border-blue-900/50 rounded-lg uppercase">← Back</button><button onclick="resetSearch()" class="flex-1 py-2 text-xs text-red-500 border border-red-900/40 rounded-lg uppercase">Restart</button></div>
+                <div class="flex gap-2 mt-4">
+                    <button id="backToSeasonBtn" onclick="backToSeasons()" class="hidden flex-1 py-2 text-xs text-blue-400 border border-blue-900/50 rounded-lg uppercase">← Back</button>
+                    <button onclick="resetSearch()" class="flex-1 py-2 text-xs text-red-500 border border-red-900/40 rounded-lg uppercase">Restart</button>
+                </div>
             </div>
             <div id="statusMsg" class="mt-4 p-3 rounded-xl text-center text-sm hidden font-bold"></div>
-            <button onclick="closeRequestModal(); openListView();" class="mt-4 w-full py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-[9px] text-zinc-400 hover:text-emerald-400 uppercase tracking-widest">Open Queue</button>
+            <button onclick="closeRequestModal(); openListView();" class="mt-4 w-full py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-[10px] text-zinc-400 hover:text-emerald-400 uppercase tracking-widest">Open Queue</button>
         </div>
     </div>
 
@@ -187,10 +190,16 @@
             const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_KEY}`);
             const data = await res.json();
             const box = document.getElementById('drillDownResults');
+            
+            // On season selection, ensure "Back" is hidden
+            document.getElementById('backToSeasonBtn').classList.add('hidden');
+
             box.innerHTML = `<div class="p-3 bg-emerald-600/20 text-center text-xs cursor-pointer mb-2" onclick="runVerification('${title}', '${year}', '', 'TV')">Request Full Series</div>`;
             data.seasons.forEach(s => {
+                if(s.season_number === 0) return; // Skip specials usually
                 const d = document.createElement('div'); d.className = 'p-3 hover:bg-zinc-700 border-b border-zinc-700 text-xs cursor-pointer'; d.innerText = s.name;
                 d.onclick = () => {
+                    // Episode selection: Show "Back"
                     document.getElementById('backToSeasonBtn').classList.remove('hidden');
                     box.innerHTML = `<div class="p-3 bg-blue-600/20 text-center text-xs cursor-pointer mb-2" onclick="runVerification('${title}', '${year}', '[S${s.season_number}]', 'TV')">Request Entire Season ${s.season_number}</div>`;
                     for(let i=1; i<=s.episode_count; i++) {
@@ -207,7 +216,6 @@
             const entry = `${title} (${year}) ${tag} - ${type}`.trim();
             const msg = document.getElementById('statusMsg');
             let list = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
-            
             msg.classList.remove('hidden');
             if(list.some(r => r.title === entry)) {
                 msg.className = "mt-4 p-3 rounded-xl text-center text-sm block bg-zinc-800 text-yellow-400";
@@ -220,14 +228,6 @@
             }
         }
 
-        function renderRequests() {
-            const list = document.getElementById('publicRequestList');
-            const data = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
-            list.innerHTML = data.length === 0 ? '<li class="text-zinc-600 italic text-center text-xs py-10">Queue is empty</li>' :
-                data.map(req => `<li class="flex justify-between items-center bg-zinc-800/40 p-3 rounded-xl border border-zinc-800 text-[11px]"><span>${req.title}</span>${adminMode ? `<button onclick="removeReq(${req.id})" class="text-red-500 px-2">✕</button>` : ''}</li>`).join('');
-            if(adminMode) document.getElementById('adminListControls').classList.remove('hidden');
-        }
-
         function verifyAdmin() { if (prompt("Code:") === ADMIN_PASS) { adminMode = true; document.getElementById('adminPanel').classList.remove('hidden'); document.getElementById('adminPanel').classList.add('flex'); } }
         function saveAdminChanges() {
             const t = document.getElementById('adminTitleIn').value;
@@ -238,7 +238,25 @@
         function toggleModal(id) { const m = document.getElementById(id); m.classList.toggle('hidden'); m.classList.toggle('flex'); }
         function openListView() { renderRequests(); toggleModal('listModal'); }
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
-        function resetSearch() { document.getElementById('searchContainer').classList.remove('hidden'); document.getElementById('drillDownContainer').classList.add('hidden'); document.getElementById('results').classList.add('hidden'); document.getElementById('statusMsg').classList.add('hidden'); selectedShow = null; }
+        
+        function resetSearch() { 
+            // Request #4: Clear search bar on restart
+            document.getElementById('movieSearch').value = '';
+            document.getElementById('searchContainer').classList.remove('hidden'); 
+            document.getElementById('drillDownContainer').classList.add('hidden'); 
+            document.getElementById('results').classList.add('hidden'); 
+            document.getElementById('statusMsg').classList.add('hidden'); 
+            selectedShow = null; 
+        }
+
+        function renderRequests() {
+            const list = document.getElementById('publicRequestList');
+            const data = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            list.innerHTML = data.length === 0 ? '<li class="text-zinc-600 italic text-center text-xs py-10">Queue is empty</li>' :
+                data.map(req => `<li class="flex justify-between items-center bg-zinc-800/40 p-3 rounded-xl border border-zinc-800 text-[11px]"><span>${req.title}</span>${adminMode ? `<button onclick="removeReq(${req.id})" class="text-red-500 px-2">✕</button>` : ''}</li>`).join('');
+            if(adminMode) document.getElementById('adminListControls').classList.remove('hidden');
+        }
+
         function backToSeasons() { if(selectedShow) startTvFlow(selectedShow.id, selectedShow.title, selectedShow.year); }
         function requestPlexAccess() { const email = prompt("Enter your Plex email:"); if (email) window.location.href = `mailto:taran.kurtz@gmail.com?subject=Plex Request&body=Email: ${email}`; }
         function removeReq(id) { let data = JSON.parse(localStorage.getItem('mediaRequests') || '[]'); localStorage.setItem('mediaRequests', JSON.stringify(data.filter(r => r.id !== id))); renderRequests(); }
