@@ -5,45 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taran's Portal</title>
     
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/ICON.jpg">
+    <link rel="icon" type="image/jpeg" href="https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/ICON.jpg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
-        
-        #mainBody { 
-            background-image: url('https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/background-1.jpg');
-            background-size: cover; background-position: center; background-attachment: fixed; background-color: #09090b;
-        }
-
+        #mainBody { background-image: url('https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/background-1.jpg'); background-size: cover; background-position: center; background-attachment: fixed; background-color: #09090b; }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .dashboard-card { height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; transition: all 0.2s ease; z-index: 20; text-decoration: none; }
+        .brand-icon { width: 42px; height: 42px; object-fit: contain; margin-bottom: 8px; }
         .modal-fixed-height { height: 520px; display: flex; flex-direction: column; }
     </style>
 </head>
 <body id="mainBody" class="bg-zinc-950 text-white min-h-screen flex flex-col items-center p-6 font-sans">
 
     <script>
-        /* Configuration */
+        /* Configuration Section */
         const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
+        const PLEX_URL = 'http://plex.tarankurtz.com:32400'; 
+        const NAS_SETTINGS_URL = 'https://NAS.tarankurtz.com:8001/';
+        const HFS_URL = 'https://transfer.tarankurtz.com:8443'; 
+        const ROUTER_URL = 'http://192.168.1.254';
+        const CLOUDFLARE_URL = 'https://dash.cloudflare.com/03c14d743f0edb4784c1a97f7214f300/home/overview';
         const ADMIN_PASS = 'Potatoes2!'; 
+        const GITHUB_CODE_URL = 'https://github.com/Dhigon/personal-template-web/blob/main/index.html';
     </script>
 
     <main class="flex-1 flex flex-col items-center justify-center w-full max-w-4xl py-10">
         <h1 id="editableTitle" class="text-3xl font-light tracking-widest mb-10 text-center uppercase">Taran's Portal</h1>
 
-        <div class="w-full max-w-2xl mb-12">
-            <div class="flex items-center bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-full px-2 py-2 shadow-xl">
-                <input type="text" id="mainSearch" onkeydown="if(event.key==='Enter') window.location.href='https://google.com/search?q='+encodeURIComponent(this.value)" placeholder="Search..." class="flex-1 py-2 px-6 text-base bg-transparent outline-none">
-            </div>
-        </div>
-
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 w-full mb-12">
             <a href="https://transfer.tarankurtz.com:8443" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-500">
+                <div id="hfsStatus" class="absolute top-2 text-[8px] uppercase tracking-tighter text-zinc-500 italic">Checking...</div>
                 <div class="text-3xl mb-1">📂</div>
                 <div class="text-[11px] uppercase tracking-widest font-bold">Files</div>
             </a>
             <a href="http://plex.tarankurtz.com:32400" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-orange-500">
+                <div id="plexStatus" class="absolute top-2 text-[8px] uppercase tracking-tighter text-zinc-500 italic">Checking...</div>
                 <div class="text-3xl mb-1">🎬</div>
                 <div class="text-[11px] uppercase tracking-widest font-bold">Plex</div>
+            </a>
+            <a href="https://youtube.com" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-red-600">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" class="brand-icon" alt="YouTube">
+                <div class="text-[11px] uppercase tracking-widest font-bold">YouTube</div>
+            </a>
+            <a href="https://remotedesktop.google.com/access" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-blue-400">
+                <div class="text-3xl mb-1">🖥️</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Remote</div>
+            </a>
+            <a href="https://NAS.tarankurtz.com:8001/" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-zinc-400">
+                <div class="text-3xl mb-1">⚙️</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">NAS Settings</div>
             </a>
             <div onclick="toggleModal('requestModal')" class="dashboard-card bg-zinc-900/90 border border-zinc-800 rounded-2xl hover:border-emerald-500">
                 <div class="text-3xl mb-1">📥</div>
@@ -62,18 +78,19 @@
     </footer>
 
     <div id="requestModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden items-center justify-center z-[100] p-4">
-        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative modal-fixed-height">
+        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-3xl relative modal-fixed-height shadow-2xl">
             <button onclick="toggleModal('requestModal')" class="absolute top-4 right-4 text-zinc-500">✕</button>
+            <h2 class="text-xl font-semibold mb-6 text-center text-emerald-400 uppercase tracking-widest">Media Request</h2>
             <input type="text" id="movieSearch" placeholder="Search Title (Year)..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none">
             <div id="results" class="mt-4 bg-zinc-800 border border-zinc-700 rounded-xl hidden overflow-y-auto"></div>
         </div>
     </div>
 
     <script>
-        /* Predictive Search Logic: Formatted with Year and Type Suffix */
+        /* Predictive Request Search Logic (With Year + Media Type Suffix) */
         document.getElementById('movieSearch').addEventListener('input', async (e) => {
             const val = e.target.value; 
-            if (val.length < 3) return;
+            if (val.length < 3) { document.getElementById('results').classList.add('hidden'); return; }
             const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(val)}`);
             const data = await res.json();
             const results = document.getElementById('results'); 
@@ -83,15 +100,14 @@
                 const title = item.title || item.name; 
                 const year = (item.release_date || item.first_air_date || '').split('-')[0] || 'N/A';
                 const type = item.media_type === 'tv' ? 'TV' : 'Movie';
-                
                 const div = document.createElement('div'); 
-                div.className = 'p-3 hover:bg-zinc-700 cursor-pointer text-xs flex justify-between border-b border-zinc-700';
+                div.className = 'p-3 hover:bg-zinc-700 cursor-pointer border-b border-zinc-700 text-xs flex justify-between';
                 div.innerHTML = `<span><b>${title}</b> (${year})</span> <span class="text-zinc-500"> - ${type}</span>`;
                 results.appendChild(div);
             });
         });
 
-        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); document.getElementById(id).classList.toggle('flex'); }
+        function toggleModal(id) { const m = document.getElementById(id); m.classList.toggle('hidden'); m.classList.toggle('flex'); }
         function verifyAdmin() { if(prompt("Admin Code:") === ADMIN_PASS) document.getElementById('adminControls').classList.remove('hidden'); }
     </script>
 </body>
