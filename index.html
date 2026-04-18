@@ -54,11 +54,6 @@
         const ADMIN_PASS = 'Potatoes2!'; 
     </script>
 
-    <a id="codeLink" href="https://github.com/Dhigon/personal-template-web/blob/main/index.html" target="_blank" class="hidden fixed bottom-6 right-6 z-[200] bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-full shadow-2xl transition-all active:scale-90 flex items-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-        <span class="text-[10px] uppercase font-bold tracking-widest pr-1">Edit Code</span>
-    </a>
-
     <main class="flex-1 flex flex-col items-center justify-center w-full max-w-4xl py-10">
         <div class="text-center mb-4">
             <p class="text-[10px] tracking-[0.3em] uppercase text-zinc-500 font-bold">tarankurtz.com</p>
@@ -154,13 +149,20 @@
             <button onclick="verifyAdmin()" id="adminBtn" class="text-zinc-800 text-[9px] tracking-[0.4em] uppercase hover:text-zinc-500 transition-colors py-2 px-4">
                 Admin Portal
             </button>
+            <a id="codeLink" href="https://github.com/Dhigon/personal-template-web/blob/main/index.html" target="_blank" class="hidden text-emerald-600/60 text-[8px] tracking-[0.2em] uppercase hover:text-emerald-400 underline transition-colors">
+                Website Code
+            </a>
         </div>
     </footer>
 
     <script>
         let adminMode = false; let selectedShow = null;
 
-        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { document.getElementById('requestModal').classList.add('hidden'); document.getElementById('listModal').classList.add('hidden'); resetSearch(); } });
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { 
+            document.getElementById('requestModal').classList.add('hidden'); 
+            document.getElementById('listModal').classList.add('hidden'); 
+            resetSearch(); 
+        } });
 
         (function init() {
             const today = new Date().toDateString();
@@ -183,17 +185,14 @@
             if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
         }
 
-        // FIXED Search Logic
         function doSearch(type) {
-            const q = document.getElementById('mainSearch').value.trim();
+            const q = document.getElementById('mainSearch').value;
             if (type === 'google') {
                 if (!q) return;
-                window.open(`https://google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+                window.location.href = `https://google.com/search?q=${encodeURIComponent(q)}`;
             } else {
-                // Gemini Logic: Open with query if exists, otherwise just open Gemini
-                const baseUrl = "https://gemini.google.com/app";
-                const fullUrl = q ? `${baseUrl}?q=${encodeURIComponent(q)}` : baseUrl;
-                window.open(fullUrl, '_blank');
+                // If text exists, query Gemini. If empty, just open Gemini.
+                window.location.href = q ? `https://gemini.google.com/app?q=${encodeURIComponent(q)}` : `https://gemini.google.com/app`;
             }
         }
 
@@ -257,4 +256,33 @@
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
         function resetSearch() { document.getElementById('movieSearch').value = ''; document.getElementById('searchContainer').classList.remove('hidden'); document.getElementById('drillDownContainer').classList.add('hidden'); document.getElementById('results').classList.add('hidden'); document.getElementById('statusMsg').classList.add('hidden'); selectedShow = null; }
         function backToSeasons() { if(selectedShow) startTvFlow(selectedShow.id, selectedShow.title, selectedShow.year); }
-        function requestPlexAccess()
+        function requestPlexAccess() { const email = prompt("Enter your Plex email:"); if (email) window.location.href = `mailto:taran.kurtz@gmail.com?subject=Plex Access Request&body=Requesting access for: ${email}`; }
+        
+        function renderRequests() {
+            const list = document.getElementById('publicRequestList');
+            const data = JSON.parse(localStorage.getItem('mediaRequests') || '[]');
+            list.innerHTML = data.length === 0 ? '<li class="text-zinc-600 italic text-center text-xs py-10">Queue is empty</li>' :
+                data.map(req => `<li class="flex justify-between items-center bg-zinc-800/40 p-3 rounded-xl border border-zinc-800 text-[11px]"><span>${req.title}</span>${adminMode ? `<button onclick="removeReq(${req.id})" class="text-red-500 px-2 font-bold">✕</button>` : ''}</li>`).join('');
+            if(adminMode) {
+                document.getElementById('adminListControls').classList.remove('hidden');
+                document.getElementById('codeLink').classList.remove('hidden');
+                document.getElementById('adminBtn').innerText = "ADMIN ACTIVE";
+                document.getElementById('adminBtn').classList.add('text-emerald-500');
+            }
+        }
+
+        function verifyAdmin() { 
+            const pass = prompt("Enter Admin Code:");
+            if (pass === ADMIN_PASS) { 
+                adminMode = true; 
+                renderRequests(); 
+            } else if (pass !== null) {
+                alert("Incorrect code.");
+            }
+        }
+        
+        function removeReq(id) { let data = JSON.parse(localStorage.getItem('mediaRequests') || '[]'); localStorage.setItem('mediaRequests', JSON.stringify(data.filter(r => r.id !== id))); renderRequests(); }
+        function clearAllRequests() { if(confirm("Clear everything?")) { localStorage.setItem('mediaRequests', '[]'); renderRequests(); } }
+    </script>
+</body>
+</html>
