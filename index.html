@@ -12,6 +12,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Custom Scrollbar Styling */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
         
@@ -23,6 +24,7 @@
         .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .dashboard-card { height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; cursor: pointer; transition: all 0.2s ease; z-index: 20; }
         
+        /* Search bar styling to remove default browser appearances */
         #mainSearch, #mainSearch:focus, #mainSearch:active, #mainSearch:-webkit-autofill { 
             outline: none !important; box-shadow: none !important; border: none !important; 
             background: transparent !important; background-color: transparent !important;
@@ -160,7 +162,7 @@
     <script>
         let adminMode = false; let selectedShow = null;
 
-        // Title rotation logic (15 minute interval)
+        /* Title rotation logic (15 minute interval) */
         (function init() {
             const lastUpdate = parseInt(localStorage.getItem('portal_last_title_update') || 0);
             const now = Date.now();
@@ -173,7 +175,7 @@
             checkOnlineStatus();
         })();
 
-        // Health checks for servers
+        /* Health checks for servers */
         async function checkOnlineStatus() {
             fetch(HFS_URL, { mode: 'no-cors', cache: 'no-store' }).then(() => setStatus('hfsStatus', true)).catch(() => setStatus('hfsStatus', false));
             fetch(NAS_SETTINGS_URL, { mode: 'no-cors', cache: 'no-store' }).then(() => setStatus('plexStatus', true)).catch(() => setStatus('plexStatus', false));
@@ -184,7 +186,7 @@
             if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
         }
 
-        // Search engine handlers
+        /* Search engine handlers */
         function doSearch(type) {
             const q = document.getElementById('mainSearch').value;
             if (type === 'google') {
@@ -195,7 +197,7 @@
             }
         }
 
-        // Media Request logic
+        /* Media Request logic */
         document.getElementById('movieSearch').addEventListener('input', async (e) => {
             const val = e.target.value; if (val.length < 3) { document.getElementById('results').classList.add('hidden'); return; }
             const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${val}`);
@@ -251,7 +253,7 @@
             }
         }
 
-        // Modal/Admin helpers
+        /* Modal and Admin UI helpers */
         function toggleModal(id) { const m = document.getElementById(id); m.classList.toggle('hidden'); m.classList.toggle('flex'); }
         function openListView() { renderRequests(); toggleModal('listModal'); }
         function closeRequestModal() { toggleModal('requestModal'); resetSearch(); }
