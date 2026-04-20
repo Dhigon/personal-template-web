@@ -7,7 +7,6 @@
     <title>Taran's Portal</title>
     
     <!-- iOS and Android specific tags for PWA-like appearance -->
-    <!-- Re-added port 8443 to the ASSET URLs to match the Request -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/ICON.jpg">
@@ -22,7 +21,7 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
         
-        /* Main background styling: The actual image is now set dynamically by JavaScript! */
+        /* Main background styling: The actual image is set dynamically by JavaScript */
         #mainBody { 
             background-size: cover; 
             background-position: center; 
@@ -88,8 +87,8 @@
         const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
         
         // Software Network URLs
-        const PLEX_URL = 'http://plex.tarankurtz.com:32400';                // DNS only, HTTP + port
-        const HFS_URL = 'https://Files.tarankurtz.com:8443';                // DNS only, HTTPS + port
+        const PLEX_URL = 'http://plex.tarankurtz.com:32400';                // Plex Direct App URL
+        const HFS_URL = 'https://transfer.tarankurtz.com:8443';             // Updated Files URL
         const NAS_SETTINGS_URL = 'https://nas.tarankurtz.com';              // Tunnel, no port
         const DOWNLOAD_URL = 'https://download.tarankurtz.com';             // Tunnel, no port
         const SEARCH_URL = 'https://search.tarankurtz.com';                 // Tunnel, no port
@@ -98,7 +97,7 @@
         const CLOUDFLARE_URL = 'https://dash.cloudflare.com/03c14d743f0edb4784c1a97f7214f300/home/overview';
         
         // Background Image Config
-        const MAX_BACKGROUNDS = 5; // <--- UPDATE THIS based on how many background files you add to your HFS server (e.g. 1 through 5)
+        const MAX_BACKGROUNDS = 5; // Update this based on how many background files you have (e.g. 1 through 5)
         
         // Admin & Backend Services
         const ADMIN_PASS = 'Potatoes2!'; 
@@ -127,7 +126,7 @@
             </div>
         </div>
 
-        <!-- Dashboard Grid Cards - Now 8 cards for a perfect 4-column layout -->
+        <!-- Dashboard Grid Cards - 8 cards in a 4-column layout -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full mb-12">
             
             <!-- HFS Files Card -->
@@ -170,14 +169,14 @@
                 <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[9px] text-zinc-400 underline uppercase tracking-widest hover:text-white z-50 transition-colors">View List</span>
             </div>
 
-            <!-- NEW: Search Downloads Card -->
+            <!-- Search Downloads Card -->
             <div onclick="handleLink(event, SEARCH_URL)" onauxclick="handleLink(event, SEARCH_URL)" class="dashboard-card rounded-2xl hover:border-pink-500">
                 <div class="text-3xl mb-1 drop-shadow-md">🔍</div>
                 <div class="text-[11px] uppercase tracking-widest font-bold">Search</div>
                 <span class="absolute bottom-2 text-[8px] text-zinc-400 uppercase tracking-widest z-50">Downloads</span>
             </div>
 
-            <!-- Downloader Modal Card -->
+            <!-- Download Progress Modal Card -->
             <div onclick="toggleModal('downloaderModal')" class="dashboard-card rounded-2xl hover:border-purple-500">
                 <div class="text-3xl mb-1 drop-shadow-md">🧲</div>
                 <div class="text-[11px] uppercase tracking-widest font-bold text-center px-1">Download<br>Progress</div>
@@ -326,13 +325,12 @@
             // 2. Dynamic Background Rotation Logic (30 min interval)
             const lastBgUpdate = parseInt(localStorage.getItem('portal_last_bg_update') || 0);
             if (now - lastBgUpdate > 30 * 60 * 1000 || !localStorage.getItem('portalBg')) {
-                // Pick a random number between 1 and your MAX_BACKGROUNDS constant
                 const randomBgNum = Math.floor(Math.random() * MAX_BACKGROUNDS) + 1;
                 localStorage.setItem('portalBg', randomBgNum);
                 localStorage.setItem('portal_last_bg_update', now);
             }
             const bgNum = localStorage.getItem('portalBg') || 1;
-            // %20 handles the spaces in "Background - 1.jpg"
+            // Background - #.jpg via HFS
             const bgUrl = `https://transfer.tarankurtz.com:8443/KurtzHome610/assets%20(website)/images/Background%20-%20${bgNum}.jpg`;
             document.getElementById('mainBody').style.backgroundImage = `url('${bgUrl}')`;
 
@@ -362,11 +360,10 @@
          * Formspree Email Submission Handler (Ajax to prevent page redirect)
          */
         async function handleEmailSubmit(event) {
-            event.preventDefault(); // Stop normal form redirect
+            event.preventDefault(); 
             const form = event.target;
             const statusMsg = document.getElementById('emailStatusMsg');
             
-            // Check if user updated the placeholder URL
             if (form.action.includes('YOUR_FORM_ID')) {
                 statusMsg.className = "text-center text-xs mt-3 font-bold text-red-400";
                 statusMsg.innerText = "Error: Admin needs to configure Formspree URL in code.";
@@ -387,7 +384,7 @@
                     statusMsg.innerText = "Request sent successfully!";
                     statusMsg.classList.remove('hidden');
                     form.reset();
-                    setTimeout(() => toggleModal('emailModal'), 2000); // Auto close after 2s
+                    setTimeout(() => toggleModal('emailModal'), 2000);
                 } else {
                     statusMsg.className = "text-center text-xs mt-3 font-bold text-red-400";
                     statusMsg.innerText = "Oops! There was a problem sending the request.";
@@ -463,16 +460,15 @@
         }
 
         /**
-         * Health checks for critical servers
-         * (Status dots maintained strictly for Files and Plex per request)
+         * Health checks for critical servers (Uses HTTPS to prevent Mixed Content blocking)
          */
         async function checkOnlineStatus() {
-            // Check HFS local
+            // Check HFS (Using exact HTTPS URL to satisfy browser constraints)
             fetch(HFS_URL, { mode: 'no-cors', cache: 'no-store' })
                 .then(() => setStatus('hfsStatus', true))
                 .catch(() => setStatus('hfsStatus', false));
             
-            // Check Plex link to NAS (Since NAS tunnel manages the box hosting Plex)
+            // Check Plex (Checking the NAS Tunnel directly because it has a valid HTTPS certificate)
             fetch(NAS_SETTINGS_URL, { mode: 'no-cors', cache: 'no-store' })
                 .then(() => setStatus('plexStatus', true))
                 .catch(() => setStatus('plexStatus', false));
