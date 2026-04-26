@@ -9,7 +9,6 @@
     <!-- iOS and Android specific tags for PWA-like appearance -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- UPDATED: Now properly mapped to look for the .png version of your icon -->
     <link rel="apple-touch-icon" href="assets/images/ICON.png"> 
     <link rel="icon" type="image/png" href="assets/images/ICON.png">
 
@@ -51,20 +50,24 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
         
-        #mainSearch, #mainSearch:focus, #mainSearch:active, #mainSearch:-webkit-autofill { 
-            outline: none !important; box-shadow: none !important; border: none !important; 
-            background: transparent !important; background-color: transparent !important;
-            color: white !important; -webkit-text-fill-color: white !important;
-            transition: background-color 5000s ease-in-out 0s; appearance: none !important; 
+        /* FIX: Strict overrides to prevent Chrome/Safari from coloring the search bar white during focus or autofill */
+        #mainSearch, #mainSearch:focus, #mainSearch:active, #mainSearch:-webkit-autofill, #mainSearch:-webkit-autofill:hover, #mainSearch:-webkit-autofill:focus { 
+            outline: none !important; 
+            box-shadow: none !important; 
+            border: none !important; 
+            background: transparent !important; 
+            background-color: transparent !important;
+            color: white !important; 
+            -webkit-text-fill-color: white !important;
+            transition: background-color 50000s ease-in-out 0s; 
+            appearance: none !important; 
         }
 
         .help-content { 
             opacity: 0; visibility: hidden; transition: all 0.3s ease; pointer-events: none;
             position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%) translateY(10px);
         }
-        .help-trigger:hover .help-content { 
-            opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0px); 
-        }
+        .help-trigger:hover .help-content { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0px); }
 
         .brand-icon { width: 42px; height: 42px; object-fit: contain; margin-bottom: 8px; }
         .modal-fixed-height { height: 520px; display: flex; flex-direction: column; }
@@ -77,6 +80,7 @@
         const TITLE_HEADERS = ["Taran's Territory", "Taran's Threshold", "Taran's Turnpike", "Taran's Town", "Taran's Tryst", "Taran's Tableau", "Taran's Track", "Taran's Terrain", "Taran's Tower", "Taran's Treasure-Trove", "Taran's Touchpoint", "Taran's Trading-Post", "Taran's Thoroughfare", "Kiki's Keep", "Kiki's Keyhole", "Kiki's Knot", "Kiki's Kinship", "Kiki's Kaleidoscope", "Kiki's Korner", "Kiki's Kerb", "Kiki's Knack", "Kiki's Kiln", "Kiki's Kernel", "Kiki's Keystone", "Kenzie's Kaleidoscope", "Kenzie's Knot", "Kenzie's Keep", "Kenzie's Key", "Kenzie's Korner", "Mackenzie's Meeting-Point", "Mackenzie's Mainstay", "Mackenzie's Map", "Mackenzie's Mission-Control", "Mackenzie's Manor", "Mackenzie's Meadow", "Mackenzie's Milestone", "Mackenzie's Meridian", "Mackenzie's Mezzanine", "Mackenzie's Motif", "Taran & Kiki's Kin", "The Taran & Kenzie Connection", "The Taran & Kenzie Knot", "Taran's & Kiki's Key-Point", "The Taran & Mackenzie Meeting-Hub"];
         const TMDB_KEY = '016c19fa578a651dfbd937a4a5fc8323';
         
+        // Software Network URLs
         const PLEX_URL = 'https://app.plex.tv/desktop';
         const HFS_URL = 'https://transfer.tarankurtz.com';
         const NAS_SETTINGS_URL = 'https://nas.tarankurtz.com';
@@ -90,8 +94,8 @@
         const NPM_URL = 'http://192.168.1.77:81';
         const UPTIME_KUMA_URL = 'http://192.168.1.77:3001';
         const CLOUDFLARE_URL = 'https://dash.cloudflare.com/03c14d743f0edb4784c1a97f7214f300/home/overview';
+        const FORMSPREE_ADMIN_URL = 'https://formspree.io/forms';
         
-        // Background Image List (Exact filenames in assets/images/)
         const BACKGROUND_IMAGES = [
             "Background - 3Dragon Ball - Goku God Unleashed.jpg",
             "Background - Dragon Ball - Goku Black.jpg",
@@ -101,6 +105,13 @@
         const ADMIN_PASS = 'Potatoes2!'; 
         const GITHUB_CODE_URL = 'https://github.com/Dhigon/personal-template-web/blob/main/index.html';
         const PLEX_CHECK_API = 'https://plexcheck.tarankurtz.com/check';
+        
+        const FORMSPREE_PLEX_ENDPOINT = 'https://formspree.io/f/meevzjao';
+        const FORMSPREE_UPLOAD_ENDPOINT = 'https://formspree.io/f/mbdqakda';
+        const FORMSPREE_TRACKER_ENDPOINT = 'https://formspree.io/f/meevzjao'; 
+        
+        // Added the specified endpoint back for media requests
+        const FORMSPREE_MEDIA_REQUEST_ENDPOINT = 'https://formspree.io/f/xjgjzqad'; 
     </script>
 
     <main class="flex-1 flex flex-col items-center justify-center w-full max-w-4xl py-10">
@@ -111,6 +122,7 @@
 
         <h1 id="editableTitle" class="text-3xl font-light tracking-widest mb-10 text-center uppercase drop-shadow-lg">Taran's Portal</h1>
 
+        <!-- Search Bar Container -->
         <div class="w-full max-w-2xl mb-12">
             <div class="flex items-center bg-zinc-900/60 backdrop-blur-xl border border-zinc-700/50 rounded-full px-2 py-2 shadow-2xl focus-within:border-zinc-500 transition-all">
                 <input type="text" id="mainSearch" onkeydown="if(event.key==='Enter') doSearch('google')" placeholder="Search or ask AI..." class="flex-1 py-2 px-6 text-base">
@@ -120,16 +132,9 @@
             </div>
         </div>
 
+        <!-- Dashboard Grid Cards -->
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full mb-12">
-            <!-- HFS Files Card -->
-            <div onclick="handleLink(event, HFS_URL)" onauxclick="handleLink(event, HFS_URL)" class="dashboard-card rounded-2xl hover:border-blue-500">
-                <div id="hfsStatus" class="absolute top-2 text-[8px] uppercase tracking-tighter text-zinc-400 italic">Checking...</div>
-                <div class="text-3xl mb-1 drop-shadow-md">📂</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">Files</div>
-                <span onclick="event.stopPropagation(); toggleModal('uploadAccessModal');" onauxclick="event.stopPropagation();" class="absolute bottom-2 text-[8px] text-zinc-400 underline uppercase hover:text-blue-400 z-50 transition-colors">Request Full Access</span>
-            </div>
-
-            <!-- Plex Media Card -->
+            
             <div onclick="handleLink(event, PLEX_URL)" onauxclick="handleLink(event, PLEX_URL)" class="dashboard-card rounded-2xl hover:border-orange-500">
                 <div id="plexStatus" class="absolute top-2 text-[8px] uppercase tracking-tighter text-zinc-400 italic">Checking...</div>
                 <div class="text-3xl mb-1 drop-shadow-md">🎬</div>
@@ -137,31 +142,32 @@
                 <span onclick="event.stopPropagation(); toggleModal('emailModal');" onauxclick="event.stopPropagation();" class="absolute bottom-2 text-[8px] text-zinc-400 underline uppercase hover:text-orange-400 z-50 transition-colors">Request Access</span>
             </div>
 
+            <div onclick="toggleModal('requestModal')" class="dashboard-card rounded-2xl hover:border-emerald-500">
+                <div class="text-3xl mb-1 drop-shadow-md">📥</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Request Media</div>
+                <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[9px] text-zinc-400 underline uppercase tracking-widest hover:text-white z-50 transition-colors">View List</span>
+            </div>
+
             <div onclick="handleLink(event, 'https://youtube.com')" onauxclick="handleLink(event, 'https://youtube.com')" class="dashboard-card rounded-2xl hover:border-red-600">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg" class="brand-icon drop-shadow-md" alt="YouTube">
                 <div class="text-[11px] uppercase tracking-widest font-bold">YouTube</div>
             </div>
 
-            <div onclick="handleLink(event, 'https://remotedesktop.google.com/access')" onauxclick="handleLink(event, 'https://remotedesktop.google.com/access')" class="dashboard-card rounded-2xl hover:border-blue-400">
-                <div class="text-3xl mb-1 drop-shadow-md">🖥️</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">Remote</div>
+            <div onclick="handleLink(event, HFS_URL)" onauxclick="handleLink(event, HFS_URL)" class="dashboard-card rounded-2xl hover:border-blue-500">
+                <div id="hfsStatus" class="absolute top-2 text-[8px] uppercase tracking-tighter text-zinc-400 italic">Checking...</div>
+                <div class="text-3xl mb-1 drop-shadow-md">📂</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Files</div>
+                <span onclick="event.stopPropagation(); toggleModal('uploadAccessModal');" onauxclick="event.stopPropagation();" class="absolute bottom-2 text-[8px] text-zinc-400 underline uppercase hover:text-blue-400 z-50 transition-colors">Request Full Access</span>
             </div>
 
-            <div onclick="handleLink(event, NAS_SETTINGS_URL)" onauxclick="handleLink(event, NAS_SETTINGS_URL)" class="dashboard-card rounded-2xl hover:border-zinc-400">
-                <div class="text-3xl mb-1 drop-shadow-md">⚙️</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold text-center px-2">NAS Settings</div>
+            <div onclick="handleLink(event, RENAME_TV_URL)" onauxclick="handleLink(event, RENAME_TV_URL)" class="dashboard-card rounded-2xl hover:border-teal-500">
+                <div class="text-3xl mb-1 drop-shadow-md">📺</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold text-center px-1">Download<br>TV</div>
             </div>
 
-            <div onclick="toggleModal('requestModal')" class="dashboard-card rounded-2xl hover:border-emerald-500">
-                <div class="text-3xl mb-1 drop-shadow-md">📥</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">Request</div>
-                <span onclick="event.stopPropagation(); openListView();" class="absolute bottom-2 text-[9px] text-zinc-400 underline uppercase tracking-widest hover:text-white z-50 transition-colors">View List</span>
-            </div>
-
-            <div onclick="handleLink(event, SEARCH_URL)" onauxclick="handleLink(event, SEARCH_URL)" class="dashboard-card rounded-2xl hover:border-pink-500">
-                <div class="text-3xl mb-1 drop-shadow-md">🔍</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold">Search</div>
-                <span class="absolute bottom-2 text-[8px] text-zinc-400 uppercase tracking-widest z-50">Downloads</span>
+            <div onclick="handleLink(event, RENAME_MOVIE_URL)" onauxclick="handleLink(event, RENAME_MOVIE_URL)" class="dashboard-card rounded-2xl hover:border-indigo-500">
+                <div class="text-3xl mb-1 drop-shadow-md">🎞️</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold text-center px-1">Download<br>Movie</div>
             </div>
 
             <div onclick="toggleModal('downloaderModal')" class="dashboard-card rounded-2xl hover:border-purple-500">
@@ -169,19 +175,26 @@
                 <div class="text-[11px] uppercase tracking-widest font-bold text-center px-1">Download<br>Progress</div>
             </div>
 
-            <div onclick="handleLink(event, RENAME_TV_URL)" onauxclick="handleLink(event, RENAME_TV_URL)" class="dashboard-card rounded-2xl hover:border-teal-500">
-                <div class="text-3xl mb-1 drop-shadow-md">📺</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold text-center px-1">TV<br>Rename</div>
+            <div onclick="handleLink(event, SEARCH_URL)" onauxclick="handleLink(event, SEARCH_URL)" class="dashboard-card rounded-2xl hover:border-pink-500">
+                <div class="text-3xl mb-1 drop-shadow-md">🔍</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Backup Search</div>
+                <span class="absolute bottom-2 text-[8px] text-zinc-400 uppercase tracking-widest z-50">Downloads</span>
             </div>
 
-            <div onclick="handleLink(event, RENAME_MOVIE_URL)" onauxclick="handleLink(event, RENAME_MOVIE_URL)" class="dashboard-card rounded-2xl hover:border-indigo-500">
-                <div class="text-3xl mb-1 drop-shadow-md">🎞️</div>
-                <div class="text-[11px] uppercase tracking-widest font-bold text-center px-1">Movie<br>Rename</div>
+            <div onclick="handleLink(event, NAS_SETTINGS_URL)" onauxclick="handleLink(event, NAS_SETTINGS_URL)" class="dashboard-card rounded-2xl hover:border-zinc-400">
+                <div class="text-3xl mb-1 drop-shadow-md">⚙️</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold text-center px-2">NAS Settings</div>
             </div>
+
+            <div onclick="handleLink(event, 'https://remotedesktop.google.com/access')" onauxclick="handleLink(event, 'https://remotedesktop.google.com/access')" class="dashboard-card rounded-2xl hover:border-blue-400">
+                <div class="text-3xl mb-1 drop-shadow-md">🖥️</div>
+                <div class="text-[11px] uppercase tracking-widest font-bold">Remote</div>
+            </div>
+
         </div>
     </main>
 
-    <!-- Modals -->
+    <!-- Modals Section -->
     <div id="uploadAccessModal" class="fixed inset-0 bg-black/80 backdrop-blur-lg hidden items-center justify-center z-[150] p-4">
         <div class="w-full max-w-sm bg-zinc-900/95 border border-blue-700/50 p-8 rounded-3xl relative shadow-2xl backdrop-blur-md">
             <button onclick="toggleModal('uploadAccessModal')" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">✕</button>
@@ -189,8 +202,8 @@
             <p class="text-[10px] text-zinc-400 text-center mb-6">What do you want your Username and Password to be?</p>
             <form id="uploadAccessForm" action="https://formspree.io/f/mbdqakda" method="POST" onsubmit="handleEmailSubmit(event, 'uploadStatusMsg', 'uploadAccessModal')" class="flex flex-col gap-4">
                 <input type="hidden" name="subject" value="New Files Full Access Request">
-                <input type="email" name="email" required placeholder="your.email@example.com" class="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-blue-500 transition-colors">
-                <input type="text" name="requested_credentials" required placeholder="[USER]:[PASS]" class="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-blue-500 transition-colors">
+                <input type="email" name="email" required placeholder="your.email@example.com" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-blue-500 transition-colors">
+                <input type="text" name="requested_credentials" required placeholder="[USER]:[PASS]" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-blue-500 transition-colors">
                 <button type="submit" class="w-full bg-blue-600/80 hover:bg-blue-500 py-3 rounded-xl text-[11px] text-white uppercase tracking-widest font-bold transition-all mt-2">Send Request</button>
                 <div id="uploadStatusMsg" class="text-center text-xs hidden mt-2 font-bold"></div>
             </form>
@@ -204,9 +217,25 @@
             <p class="text-[10px] text-zinc-400 text-center mb-6">Enter your email to request an invite.</p>
             <form id="plexEmailForm" action="https://formspree.io/f/meevzjao" method="POST" onsubmit="handleEmailSubmit(event, 'emailStatusMsg', 'emailModal')" class="flex flex-col gap-4">
                 <input type="hidden" name="subject" value="New Plex Access Request">
-                <input type="email" name="email" required placeholder="your.email@example.com" class="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-orange-500 transition-colors">
+                <input type="email" name="email" required placeholder="your.email@example.com" class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-orange-500 transition-colors">
                 <button type="submit" class="w-full bg-orange-600/80 hover:bg-orange-500 py-3 rounded-xl text-[11px] text-white uppercase tracking-widest font-bold transition-all mt-2">Send Request</button>
                 <div id="emailStatusMsg" class="text-center text-xs hidden mt-2 font-bold"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Media Tracker Modal -->
+    <div id="trackerModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl hidden items-center justify-center z-[300] p-4">
+        <div class="w-full max-w-sm bg-zinc-900 border border-blue-500/50 p-8 rounded-3xl relative shadow-2xl">
+            <button onclick="toggleModal('trackerModal')" class="absolute top-4 right-4 text-zinc-500 hover:text-white">✕</button>
+            <h2 class="text-xl font-semibold mb-2 text-center text-blue-400 uppercase tracking-widest">Track Item</h2>
+            <p id="trackerTitle" class="text-[11px] text-zinc-300 text-center mb-6 italic"></p>
+            <form id="trackerForm" action="https://formspree.io/f/meevzjao" method="POST" onsubmit="handleEmailSubmit(event, 'trackerStatusMsg', 'trackerModal')" class="flex flex-col gap-4">
+                <input type="hidden" name="subject" value="Media Tracker Subscription">
+                <input type="hidden" id="trackerHiddenItem" name="item_to_track" value="">
+                <input type="email" name="email" required placeholder="Enter your email..." class="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-blue-500">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-xl text-[11px] text-white uppercase tracking-widest font-bold">Notify Me when on Plex</button>
+                <div id="trackerStatusMsg" class="text-center text-xs hidden mt-2 font-bold"></div>
             </form>
         </div>
     </div>
@@ -216,31 +245,32 @@
             <button onclick="closeRequestModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">✕</button>
             <h2 class="text-xl font-semibold mb-6 text-center text-emerald-400 uppercase tracking-widest drop-shadow-md">Media Request</h2>
             
-            <!-- Standard TMDB Search Container -->
             <div id="searchContainer" class="flex flex-col flex-1 overflow-hidden">
                 <input type="text" id="movieSearch" placeholder="Search Movie/TV/Person..." class="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-emerald-500 transition-colors">
                 <div id="results" class="mt-4 bg-zinc-800/80 border border-zinc-700 rounded-xl hidden overflow-y-auto"></div>
                 <button onclick="toggleCustomRequest()" class="mt-4 text-[10px] text-zinc-500 hover:text-emerald-400 underline uppercase tracking-widest transition-colors self-center">Not finding it? Add Custom Item</button>
             </div>
 
-            <!-- TV Drilldown Container -->
             <div id="drillDownContainer" class="hidden flex flex-col flex-1 overflow-hidden">
                 <div id="drillDownResults" class="bg-zinc-800/80 border border-zinc-700 rounded-xl overflow-y-auto flex-1"></div>
                 <div class="flex gap-2 mt-4">
-                    <button id="backToSeasonBtn" onclick="backToSeasons()" class="hidden flex-1 py-2 text-xs text-blue-400 border border-blue-900/50 hover:bg-blue-900/20 rounded-lg uppercase transition-colors">← Back</button>
-                    <button onclick="resetSearch()" class="flex-1 py-2 text-xs text-red-500 border border-red-900/40 hover:bg-red-900/20 rounded-lg uppercase transition-colors">Restart</button>
+                    <button id="backToSeasonBtn" onclick="backToSeasons()" class="hidden flex-1 py-2 text-xs text-blue-400 border border-blue-900/50 hover:bg-blue-900/20 rounded-lg uppercase">← Back</button>
+                    <button onclick="resetSearch()" class="flex-1 py-2 text-xs text-red-500 border border-red-900/40 hover:bg-red-900/20 rounded-lg uppercase">Restart</button>
                 </div>
             </div>
 
-            <!-- Custom Request Container -->
             <div id="customRequestContainer" class="hidden flex flex-col flex-1 overflow-hidden mt-4">
                 <p class="text-center text-[10px] text-zinc-400 mb-3 uppercase tracking-widest">Add Books, Comics, or Other Items</p>
                 <input type="text" id="customItemInput" placeholder="Enter Item Name..." class="w-full bg-zinc-800/80 border border-zinc-700 rounded-xl py-3 px-4 text-white outline-none focus:border-emerald-500 transition-colors">
-                <button onclick="submitCustomItem()" class="mt-4 w-full py-3 bg-emerald-600/80 hover:bg-emerald-500 rounded-xl text-[11px] text-white uppercase tracking-widest font-bold transition-all">Submit Custom Request</button>
+                <button onclick="submitCustomItem()" class="mt-4 w-full py-3 bg-emerald-600/80 hover:bg-emerald-500 rounded-xl text-[11px] text-white uppercase tracking-widest font-bold">Submit Custom Request</button>
                 <button onclick="toggleCustomRequest()" class="mt-4 text-[10px] text-zinc-500 hover:text-white underline uppercase tracking-widest transition-colors self-center">Back to Media Search</button>
             </div>
 
             <div id="statusMsg" class="mt-4 p-3 rounded-xl text-center text-sm hidden font-bold shadow-inner"></div>
+            <div id="successActionArea" class="hidden mt-2">
+                <button id="trackImmediatelyBtn" class="w-full py-3 bg-blue-600/20 border border-blue-500/50 rounded-xl text-[10px] text-blue-400 uppercase tracking-widest hover:bg-blue-600/40 transition-all">Track this Item (Email Notification)</button>
+            </div>
+
             <button onclick="closeRequestModal(); openListView();" class="mt-auto w-full py-3 bg-zinc-800/50 border border-zinc-700 hover:border-emerald-500/50 rounded-xl text-[10px] text-zinc-400 hover:text-emerald-400 uppercase tracking-widest transition-all">Open Request Queue</button>
         </div>
     </div>
@@ -249,15 +279,11 @@
         <div class="w-full max-w-md bg-zinc-900/90 border border-zinc-700/50 p-8 rounded-3xl relative flex flex-col modal-fixed-height shadow-2xl backdrop-blur-md">
             <button onclick="toggleModal('listModal')" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">✕</button>
             <h2 class="text-xl font-semibold mb-6 text-center text-yellow-400 uppercase tracking-widest drop-shadow-md">Current Queue</h2>
-            <div id="dbLoading" class="text-center text-xs text-zinc-500 mb-2 italic">Syncing with server...</div>
+            <div id="dbLoading" class="text-center text-[10px] text-zinc-500 mb-2 italic">Syncing with server...</div>
             <ul id="publicRequestList" class="space-y-2 overflow-y-auto flex-1 mb-4 pr-2"></ul>
             <div class="mt-auto flex flex-col gap-2">
-                <button id="toggleActorBtn" onclick="cycleViewMode()" class="w-full bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700/50 py-3 rounded-xl text-[10px] text-zinc-400 hover:text-white uppercase tracking-widest transition-colors">
-                    Favorite Actors to Watch
-                </button>
-                <button onclick="toggleModal('listModal'); toggleModal('requestModal');" class="w-full bg-emerald-900/20 hover:bg-emerald-900/40 border border-emerald-700/30 hover:border-emerald-500/50 py-3 rounded-xl text-[10px] text-emerald-500 hover:text-emerald-400 uppercase tracking-widest transition-all">
-                    Return to Request Form
-                </button>
+                <button id="toggleActorBtn" onclick="cycleViewMode()" class="w-full bg-zinc-800/50 hover:bg-zinc-700 border border-zinc-700/50 py-3 rounded-xl text-[10px] text-zinc-400 hover:text-white uppercase tracking-widest transition-colors">Favorite Actors</button>
+                <button onclick="toggleModal('listModal'); toggleModal('requestModal');" class="w-full bg-emerald-900/20 hover:bg-emerald-900/40 border border-emerald-700/30 py-3 rounded-xl text-[10px] text-emerald-500 hover:text-emerald-400 uppercase tracking-widest transition-all">Request New Item</button>
             </div>
             <div id="adminListControls" class="hidden mt-4">
                 <button onclick="clearAllRequests()" class="w-full bg-red-900/30 hover:bg-red-900/50 text-red-500 py-3 rounded-xl text-[10px] border border-red-900/50 uppercase transition-colors">Clear All</button>
@@ -300,11 +326,12 @@
         <div class="flex flex-col items-center gap-3">
             <button onclick="verifyAdmin()" id="adminBtn" class="text-zinc-600 text-[9px] tracking-[0.4em] uppercase hover:text-zinc-400 transition-colors py-2 px-4 rounded-lg hover:bg-zinc-800/30">Admin Portal</button>
             <div id="adminControls" class="hidden flex flex-wrap justify-center gap-4 mt-2">
-                <button onclick="handleLink(event, GITHUB_CODE_URL, true)" onauxclick="handleLink(event, GITHUB_CODE_URL, true)" class="text-emerald-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-emerald-400 hover:underline transition-all">Website Code</button>
-                <button onclick="handleLink(event, NPM_URL, true)" onauxclick="handleLink(event, NPM_URL, true)" class="text-zinc-400/80 text-[9px] tracking-[0.2em] uppercase hover:text-white hover:underline transition-all">NPM Settings</button>
-                <button onclick="handleLink(event, ROUTER_URL, true)" onauxclick="handleLink(event, ROUTER_URL, true)" class="text-blue-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-blue-400 hover:underline transition-all">Router</button>
-                <button onclick="handleLink(event, CLOUDFLARE_URL, true)" onauxclick="handleLink(event, CLOUDFLARE_URL, true)" class="text-orange-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-orange-400 hover:underline transition-all">CloudFlare</button>
-                <button onclick="handleLink(event, UPTIME_KUMA_URL, true)" onauxclick="handleLink(event, UPTIME_KUMA_URL, true)" class="text-purple-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-purple-400 hover:underline transition-all">Uptime Kuma</button>
+                <button onclick="handleLink(event, GITHUB_CODE_URL, true)" class="text-emerald-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-emerald-400 hover:underline">Website Code</button>
+                <button onclick="handleLink(event, NPM_URL, true)" class="text-zinc-400/80 text-[9px] tracking-[0.2em] uppercase hover:text-white hover:underline">NPM Settings</button>
+                <button onclick="handleLink(event, ROUTER_URL, true)" class="text-blue-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-blue-400 hover:underline">Router</button>
+                <button onclick="handleLink(event, CLOUDFLARE_URL, true)" class="text-orange-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-orange-400 hover:underline">CloudFlare</button>
+                <button onclick="handleLink(event, UPTIME_KUMA_URL, true)" class="text-purple-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-purple-400 hover:underline">Uptime Kuma</button>
+                <button onclick="handleLink(event, FORMSPREE_ADMIN_URL, true)" class="text-pink-500/80 text-[9px] tracking-[0.2em] uppercase hover:text-pink-400 hover:underline">Formspree</button>
             </div>
         </div>
     </footer>
@@ -312,8 +339,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // EXPORT TO WINDOW FOR HTML ONCLICK EVENTS
         window.handleLink = handleLink;
         window.doSearch = doSearch;
         window.toggleModal = toggleModal;
@@ -330,34 +358,22 @@
         window.runVerification = runVerification;
         window.toggleCustomRequest = toggleCustomRequest;
         window.submitCustomItem = submitCustomItem;
+        window.openTracker = openTracker;
+        window.showCustomDialog = showCustomDialog;
 
         let adminMode = false; 
         let selectedShow = null;
-        let currentViewMode = 'MEDIA'; // Cycle between 'MEDIA', 'ACTORS', 'CUSTOM'
+        let currentViewMode = 'MEDIA'; 
         let db, auth, currentUser;
         let globalRequests = []; 
+        const appId = "taran-portal";
 
         (function init() {
-            const now = Date.now();
-            const lastTitleUpdate = parseInt(localStorage.getItem('portal_last_title_update') || 0);
-            if (now - lastTitleUpdate > 15 * 60 * 1000) {
-                const randomTitle = TITLE_HEADERS[Math.floor(Math.random() * TITLE_HEADERS.length)];
-                localStorage.setItem('portalTitle', randomTitle);
-                localStorage.setItem('portal_last_title_update', now);
-            }
-            document.getElementById('editableTitle').innerText = localStorage.getItem('portalTitle') || "Taran's Portal";
-
-            const lastBgUpdate = parseInt(localStorage.getItem('portal_last_bg_update') || 0);
-            if (now - lastBgUpdate > 30 * 60 * 1000 || !localStorage.getItem('portalBg')) {
-                const randomBgIndex = Math.floor(Math.random() * BACKGROUND_IMAGES.length);
-                localStorage.setItem('portalBg', randomBgIndex);
-                localStorage.setItem('portal_last_bg_update', now);
-            }
-            const bgIndex = localStorage.getItem('portalBg') || 0;
-            const bgFileName = BACKGROUND_IMAGES[bgIndex] || BACKGROUND_IMAGES[0];
-            const bgUrl = `assets/images/${bgFileName}`; 
+            const randomTitle = TITLE_HEADERS[Math.floor(Math.random() * TITLE_HEADERS.length)];
+            document.getElementById('editableTitle').innerText = randomTitle;
+            const bgIndex = Math.floor(Math.random() * BACKGROUND_IMAGES.length);
+            const bgUrl = `assets/images/${BACKGROUND_IMAGES[bgIndex]}`; 
             document.getElementById('mainBody').style.backgroundImage = `url('${bgUrl}')`;
-
             checkOnlineStatus();
         })();
 
@@ -368,18 +384,13 @@
                 projectId: "website-request-92a19",
                 storageBucket: "website-request-92a19.firebasestorage.app",
                 messagingSenderId: "824697993687",
-                appId: "1:824697993687:web:04d5fa0ef62c911b123392",
-                measurementId: "G-KVN29VS52Y"
+                appId: "1:824697993687:web:04d5fa0ef62c911b123392"
             };
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            const appId = "taran-portal"; 
 
-            const initAuth = async () => {
-                try { await signInAnonymously(auth); } catch (e) {}
-            };
-            initAuth();
+            signInAnonymously(auth);
 
             onAuthStateChanged(auth, (user) => {
                 currentUser = user;
@@ -387,233 +398,192 @@
                     const reqRef = collection(db, 'artifacts', appId, 'public', 'data', 'mediaRequests');
                     onSnapshot(reqRef, (snapshot) => {
                         globalRequests = [];
-                        snapshot.forEach(doc => globalRequests.push(doc.data()));
+                        snapshot.forEach(doc => {
+                            let data = doc.data();
+                            data.firebaseId = doc.id;
+                            globalRequests.push(data);
+                        });
                         globalRequests.sort((a, b) => a.id - b.id);
                         document.getElementById('dbLoading').classList.add('hidden');
-                        renderRequests(); 
-                    }, (error) => {});
+                        renderRequests();
+                        runMaintenanceCheck();
+                    });
                 }
             });
         } catch (e) {}
-        
+
+        /**
+         * Custom Dialog Handler for Prompt/Confirm/Alert
+         */
+        function showCustomDialog(type, message, placeholder = '') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customDialogModal');
+                const msgEl = document.getElementById('dialogMessage');
+                const inputEl = document.getElementById('dialogInput');
+                const confirmBtn = document.getElementById('dialogConfirmBtn');
+                const cancelBtn = document.getElementById('dialogCancelBtn');
+
+                msgEl.innerText = message;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                if (type === 'prompt') {
+                    inputEl.classList.remove('hidden');
+                    inputEl.value = '';
+                    inputEl.placeholder = placeholder;
+                    cancelBtn.classList.remove('hidden');
+                    inputEl.focus();
+                } else if (type === 'confirm') {
+                    inputEl.classList.add('hidden');
+                    cancelBtn.classList.remove('hidden');
+                } else {
+                    inputEl.classList.add('hidden');
+                    cancelBtn.classList.add('hidden');
+                }
+
+                const cleanup = (val) => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    confirmBtn.onclick = null;
+                    cancelBtn.onclick = null;
+                    inputEl.onkeydown = null;
+                    resolve(val);
+                };
+
+                confirmBtn.onclick = () => cleanup(type === 'prompt' ? inputEl.value : true);
+                cancelBtn.onclick = () => cleanup(type === 'prompt' ? null : false);
+                inputEl.onkeydown = (e) => { if (e.key === 'Enter') confirmBtn.click(); };
+            });
+        }
+
+        async function runMaintenanceCheck() {
+            if (!currentUser) return;
+            const itemsToCheck = globalRequests.filter(r => !r.title.endsWith('- PERSON') && !r.title.endsWith('- CUSTOM'));
+            for (const item of itemsToCheck) {
+                try {
+                    const parts = item.title.split(' - ');
+                    const type = parts[1];
+                    const mainBit = parts[0]; 
+                    const yearMatch = mainBit.match(/\((\d{4})\)/);
+                    const year = yearMatch ? yearMatch[1] : '';
+                    const titleOnly = mainBit.replace(/\(\d{4}\)/, '').split('[')[0].trim();
+                    const tagMatch = mainBit.match(/\[(.*?)\]/);
+                    const tag = tagMatch ? tagMatch[1] : '';
+
+                    const res = await fetch(`${PLEX_CHECK_API}?query=${encodeURIComponent(titleOnly)}&year=${encodeURIComponent(year)}&tag=${encodeURIComponent(tag)}&type=${encodeURIComponent(type)}`);
+                    const plexData = await res.json();
+                    
+                    if (plexData && plexData.exists) {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', item.firebaseId));
+                    }
+                } catch (err) {}
+            }
+        }
+
+        // RESTORED: Sends a background email to Formspree when standard media is added
+        async function sendMediaNotification(itemTitle) {
+            if (!FORMSPREE_MEDIA_REQUEST_ENDPOINT || FORMSPREE_MEDIA_REQUEST_ENDPOINT.includes('YOUR_NEW_FORM_ID')) return;
+            
+            const formData = new FormData();
+            formData.append('subject', 'New Media Request: ' + itemTitle);
+            formData.append('message', 'A new request was added to the standard queue: ' + itemTitle);
+            
+            try {
+                await fetch(FORMSPREE_MEDIA_REQUEST_ENDPOINT, { 
+                    method: 'POST', 
+                    body: formData, 
+                    headers: { 'Accept': 'application/json' } 
+                });
+            } catch (e) {
+                console.error("Email send failed:", e);
+            }
+        }
+
         async function handleEmailSubmit(event, statusMsgId, modalId) {
             event.preventDefault(); 
             const form = event.target;
             const statusMsg = document.getElementById(statusMsgId);
             const data = new FormData(form);
             try {
-                const response = await fetch(form.action, {
-                    method: form.method,
-                    body: data,
-                    headers: { 'Accept': 'application/json' }
-                });
+                const response = await fetch(form.action, { method: form.method, body: data, headers: { 'Accept': 'application/json' } });
                 if (response.ok) {
                     statusMsg.className = "text-center text-xs mt-3 font-bold text-emerald-400";
-                    statusMsg.innerText = "Request sent successfully!";
+                    statusMsg.innerText = "Sent Successfully!";
                     statusMsg.classList.remove('hidden');
                     form.reset();
                     setTimeout(() => { toggleModal(modalId); statusMsg.classList.add('hidden'); }, 2000);
-                } else {
-                    statusMsg.className = "text-center text-xs mt-3 font-bold text-red-400";
-                    statusMsg.innerText = "Oops! Problem sending request.";
-                    statusMsg.classList.remove('hidden');
                 }
-            } catch (error) {
-                statusMsg.className = "text-center text-xs mt-3 font-bold text-red-400";
-                statusMsg.innerText = "Network error.";
-                statusMsg.classList.remove('hidden');
-            }
+            } catch (error) {}
+        }
+
+        function openTracker(title) {
+            document.getElementById('trackerTitle').innerText = title;
+            document.getElementById('trackerHiddenItem').value = title;
+            toggleModal('trackerModal');
         }
 
         function handleLink(e, url, forceNewTab = false) {
-            if (e.type === 'click' && e.button === 0) {
-                if (forceNewTab || e.ctrlKey || e.metaKey) window.open(url, '_blank');
-                else window.location.href = url;
-            } else if (e.type === 'auxclick' && e.button === 1) {
-                window.open(url, '_blank');
-            }
-        }
-
-        function showCustomDialog(type, message, placeholder = "") {
-            return new Promise((resolve) => {
-                const modal = document.getElementById('customDialogModal');
-                const msgEl = document.getElementById('dialogMessage');
-                const inputEl = document.getElementById('dialogInput');
-                const cancelBtn = document.getElementById('dialogCancelBtn');
-                const confirmBtn = document.getElementById('dialogConfirmBtn');
-                msgEl.innerText = message;
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                if (type === 'prompt') {
-                    inputEl.value = '';
-                    inputEl.placeholder = placeholder;
-                    inputEl.classList.remove('hidden');
-                    cancelBtn.classList.remove('hidden');
-                    confirmBtn.innerText = 'Submit';
-                    setTimeout(() => inputEl.focus(), 100);
-                } else if (type === 'confirm') {
-                    inputEl.classList.add('hidden');
-                    cancelBtn.classList.remove('hidden');
-                    confirmBtn.innerText = 'Confirm';
-                } else { 
-                    inputEl.classList.add('hidden');
-                    cancelBtn.classList.add('hidden');
-                    confirmBtn.innerText = 'OK';
-                }
-                const closeDialog = (val) => {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                    resolve(val);
-                };
-                cancelBtn.onclick = () => closeDialog(null);
-                confirmBtn.onclick = () => {
-                    if (type === 'prompt') closeDialog(inputEl.value);
-                    else closeDialog(true);
-                };
-            });
-        }
-
-        async function checkOnlineStatus() {
-            fetch(HFS_URL, { mode: 'no-cors', cache: 'no-store' })
-                .then(() => setStatus('hfsStatus', true))
-                .catch(() => setStatus('hfsStatus', false));
-            
-            const STATUS_API = PLEX_CHECK_API.replace('/check', '/status');
-            fetch(STATUS_API)
-                .then(res => res.json())
-                .then(data => setStatus('plexStatus', data.online === true))
-                .catch(() => setStatus('plexStatus', false));
-        }
-
-        function setStatus(id, online) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.innerHTML = online 
-                    ? `<span class="status-dot bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span> Online` 
-                    : `<span class="status-dot bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span> Offline`;
-            }
+            if (forceNewTab) window.open(url, '_blank');
+            else window.location.href = url;
         }
 
         function doSearch(type) {
             const q = document.getElementById('mainSearch').value;
-            if (type === 'google') {
-                if (!q) return;
-                window.location.href = `https://google.com/search?q=${encodeURIComponent(q)}`;
-            } else {
-                window.location.href = q ? `https://gemini.google.com/app?q=${encodeURIComponent(q)}` : `https://gemini.google.com/app`;
-            }
+            if (type === 'google') window.location.href = q ? `https://google.com/search?q=${encodeURIComponent(q)}` : 'https://google.com';
+            else window.location.href = q ? `https://gemini.google.com/app?q=${encodeURIComponent(q)}` : `https://gemini.google.com/app`;
+        }
+
+        async function checkOnlineStatus() {
+            fetch(HFS_URL, { mode: 'no-cors' }).then(() => setStatus('hfsStatus', true)).catch(() => setStatus('hfsStatus', false));
+            fetch(PLEX_CHECK_API.replace('/check', '/status')).then(res => res.json()).then(data => setStatus('plexStatus', data.online === true)).catch(() => setStatus('plexStatus', false));
+        }
+
+        function setStatus(id, online) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = online ? `<span class="status-dot bg-green-500"></span> Online` : `<span class="status-dot bg-red-500"></span> Offline`;
         }
 
         document.getElementById('movieSearch').addEventListener('input', async (e) => {
             const val = e.target.value; 
             if (val.length < 3) { document.getElementById('results').classList.add('hidden'); return; }
-            try {
-                const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(val)}`);
-                const data = await res.json();
-                const results = document.getElementById('results'); 
-                results.innerHTML = ''; results.classList.remove('hidden');
-                data.results.slice(0, 5).forEach(item => {
-                    const title = item.title || item.name; 
-                    const year = (item.release_date || item.first_air_date || '').split('-')[0];
-                    const div = document.createElement('div'); 
-                    div.className = 'p-3 hover:bg-zinc-700/80 cursor-pointer border-b border-zinc-700/50 text-xs transition-colors flex justify-between items-center';
-                    const yearDisplay = (year && item.media_type !== 'person') ? `(${year})` : '';
-                    div.innerHTML = `<span><b>${title}</b> ${yearDisplay}</span> <span class="text-[9px] font-bold text-zinc-500 uppercase">${item.media_type}</span>`;
-                    div.onclick = () => window.runVerification(title, year, "", item.media_type === 'tv' ? 'TV' : item.media_type === 'person' ? 'PERSON' : 'MOVIE', item.id);
-                    results.appendChild(div);
-                });
-            } catch (e) {}
+            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${encodeURIComponent(val)}`);
+            const data = await res.json();
+            const results = document.getElementById('results'); 
+            results.innerHTML = ''; results.classList.remove('hidden');
+            data.results.slice(0, 5).forEach(item => {
+                const title = item.title || item.name; 
+                const year = (item.release_date || item.first_air_date || '').split('-')[0];
+                const div = document.createElement('div'); 
+                div.className = 'p-3 hover:bg-zinc-700/80 cursor-pointer border-b border-zinc-700/50 text-xs flex justify-between items-center';
+                div.innerHTML = `<span><b>${title}</b> ${year ? `(${year})` : ''}</span> <span class="text-[9px] font-bold text-zinc-500 uppercase">${item.media_type}</span>`;
+                div.onclick = () => runVerification(title, year, "", item.media_type === 'tv' ? 'TV' : item.media_type === 'person' ? 'PERSON' : 'MOVIE', item.id);
+                results.appendChild(div);
+            });
         });
-
-        async function startTvFlow(id, title, year) {
-            selectedShow = { id, title, year };
-            document.getElementById('searchContainer').classList.add('hidden');
-            document.getElementById('drillDownContainer').classList.remove('hidden');
-            try {
-                const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_KEY}`);
-                const data = await res.json();
-                const box = document.getElementById('drillDownResults');
-                document.getElementById('backToSeasonBtn').classList.add('hidden');
-                
-                box.innerHTML = '';
-                const fullSeriesBtn = document.createElement('div');
-                fullSeriesBtn.className = "p-3 bg-emerald-600/20 hover:bg-emerald-600/30 text-center text-xs cursor-pointer mb-2 rounded-lg transition-colors border border-emerald-500/20";
-                fullSeriesBtn.innerText = "Request Full Series";
-                fullSeriesBtn.onclick = () => window.runVerification(title, year, '', 'TV');
-                box.appendChild(fullSeriesBtn);
-
-                data.seasons.forEach(s => {
-                    if(s.season_number === 0) return; 
-                    const d = document.createElement('div'); 
-                    d.className = 'p-3 hover:bg-zinc-700/80 border-b border-zinc-700/50 text-xs cursor-pointer transition-colors'; 
-                    d.innerText = s.name;
-                    d.onclick = () => {
-                        document.getElementById('backToSeasonBtn').classList.remove('hidden');
-                        box.innerHTML = '';
-                        
-                        const entireSeasonBtn = document.createElement('div');
-                        entireSeasonBtn.className = "p-3 bg-blue-600/20 hover:bg-blue-600/30 text-center text-xs cursor-pointer mb-2 rounded-lg transition-colors border border-blue-500/20";
-                        entireSeasonBtn.innerText = `Request Entire Season ${s.season_number}`;
-                        entireSeasonBtn.onclick = () => window.runVerification(title, year, `[Season ${s.season_number}]`, 'TV');
-                        box.appendChild(entireSeasonBtn);
-
-                        for(let i=1; i<=s.episode_count; i++) {
-                            const ep = document.createElement('div'); 
-                            ep.className = 'p-2 hover:bg-zinc-700/80 border-b border-zinc-700/50 text-[10px] pl-6 cursor-pointer transition-colors'; 
-                            ep.innerText = `Episode ${i}`;
-                            ep.onclick = () => window.runVerification(title, year, `[S${s.season_number}E${i.toString().padStart(2,'0')}]`, "TV");
-                            box.appendChild(ep);
-                        }
-                    };
-                    box.appendChild(d);
-                });
-            } catch (e) {}
-        }
-
-        function toggleCustomRequest() {
-            const searchBox = document.getElementById('searchContainer');
-            const customBox = document.getElementById('customRequestContainer');
-            if (searchBox.classList.contains('hidden')) {
-                searchBox.classList.remove('hidden');
-                customBox.classList.add('hidden');
-            } else {
-                searchBox.classList.add('hidden');
-                customBox.classList.remove('hidden');
-            }
-        }
-
-        async function submitCustomItem() {
-            const val = document.getElementById('customItemInput').value.trim();
-            if (!val) return;
-            await window.runVerification(val, "", "", "CUSTOM");
-            document.getElementById('customItemInput').value = '';
-        }
 
         async function runVerification(title, year, tag, type, id=null) {
             if (type === 'TV' && tag === "" && id) { startTvFlow(id, title, year); return; }
-            
             const msg = document.getElementById('statusMsg');
+            const actionArea = document.getElementById('successActionArea');
             msg.classList.remove('hidden');
+            actionArea.classList.add('hidden');
 
-            // Bug Fix: Catch mobile sleeping tab disconnections gracefully instead of silent failures
             if (!currentUser) {
                 msg.className = "mt-4 p-3 rounded-xl text-center text-sm block bg-yellow-900/40 text-yellow-400 border border-yellow-700/50";
-                msg.innerText = "⏳ Reconnecting to server... Please try tapping again.";
-                try { await signInAnonymously(auth); } catch (e) {}
+                msg.innerText = "⏳ Reconnecting...";
                 return; 
             }
 
-            const appId = "taran-portal"; 
             msg.className = "mt-4 p-3 rounded-xl text-center text-sm block bg-zinc-800 text-blue-400";
-            msg.innerText = "🔍 Processing Request...";
+            msg.innerText = "🔍 Checking Plex...";
             
-            // Bypass Plex check for PERSON and CUSTOM tags
             if (type !== 'PERSON' && type !== 'CUSTOM') {
                 try {
                     const res = await fetch(`${PLEX_CHECK_API}?query=${encodeURIComponent(title)}&year=${encodeURIComponent(year || '')}&tag=${encodeURIComponent(tag || '')}&type=${encodeURIComponent(type || '')}`);
                     const plexStatus = await res.json();
                     if (plexStatus && plexStatus.exists) {
                         msg.className = "mt-4 p-3 rounded-xl text-center text-sm block bg-emerald-900/40 text-emerald-400 border border-emerald-500/50";
+                        // RESTORED: Shows the exact Plex title matched.
                         msg.innerHTML = `✅ Found on Plex!<br><span class="text-[10px] opacity-80">Matching: ${plexStatus.title}</span>`;
                         return; 
                     }
@@ -626,27 +596,79 @@
                 msg.innerText = "⚠️ Already in Server Queue!";
             } else {
                 const newId = Date.now();
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', newId.toString());
-                await setDoc(docRef, { title: entry, id: newId, dl_status: 'pending' });
-                msg.className = "mt-4 p-3 rounded-xl text-center text-sm block bg-emerald-900/40 text-emerald-400 border border-emerald-700/50";
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', newId.toString()), { title: entry, id: newId, dl_status: 'pending' });
+                msg.className = "mt-4 p-3 rounded-xl text-center text-sm block bg-emerald-900/40 text-emerald-400 border border-emerald-500/50";
                 msg.innerText = "🚀 Added to Server Queue!";
+                
+                // RESTORED: Send the background email alert!
+                if (type === 'MOVIE' || type === 'TV') {
+                    sendMediaNotification(entry);
+                }
+
+                if (type !== 'PERSON') {
+                    actionArea.classList.remove('hidden');
+                    document.getElementById('trackImmediatelyBtn').onclick = () => openTracker(entry);
+                }
             }
+        }
+
+        async function startTvFlow(id, title, year) {
+            selectedShow = { id, title, year };
+            document.getElementById('searchContainer').classList.add('hidden');
+            document.getElementById('drillDownContainer').classList.remove('hidden');
+            
+            // FIX: Ensure the back button is strictly hidden initially when looking at the Seasons list!
+            document.getElementById('backToSeasonBtn').classList.add('hidden');
+            
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_KEY}`);
+            const data = await res.json();
+            const box = document.getElementById('drillDownResults');
+            box.innerHTML = '';
+            
+            const fullBtn = document.createElement('div');
+            fullBtn.className = "p-3 bg-emerald-600/20 hover:bg-emerald-600/30 text-center text-xs cursor-pointer mb-2 rounded-lg border border-emerald-500/20";
+            fullBtn.innerText = "Request Full Series";
+            fullBtn.onclick = () => runVerification(title, year, '', 'TV');
+            box.appendChild(fullBtn);
+
+            data.seasons.forEach(s => {
+                if(s.season_number === 0) return; 
+                const d = document.createElement('div'); 
+                d.className = 'p-3 hover:bg-zinc-700/80 border-b border-zinc-700/50 text-xs cursor-pointer'; 
+                d.innerText = s.name;
+                d.onclick = () => {
+                    // We are now inside a specific season, reveal the back button
+                    document.getElementById('backToSeasonBtn').classList.remove('hidden');
+                    
+                    box.innerHTML = '';
+                    const sBtn = document.createElement('div');
+                    sBtn.className = "p-3 bg-blue-600/20 hover:bg-blue-600/30 text-center text-xs cursor-pointer mb-2 rounded-lg border border-blue-500/20";
+                    sBtn.innerText = `Request Entire Season ${s.season_number}`;
+                    sBtn.onclick = () => runVerification(title, year, `[Season ${s.season_number}]`, 'TV');
+                    box.appendChild(sBtn);
+                    for(let i=1; i<=s.episode_count; i++) {
+                        const ep = document.createElement('div'); 
+                        ep.className = 'p-2 hover:bg-zinc-700/80 border-b border-zinc-700/50 text-[10px] pl-6 cursor-pointer'; 
+                        ep.innerText = `Episode ${i}`;
+                        ep.onclick = () => runVerification(title, year, `[S${s.season_number}E${i.toString().padStart(2,'0')}]`, "TV");
+                        box.appendChild(ep);
+                    }
+                };
+                box.appendChild(d);
+            });
         }
 
         function toggleModal(id) { 
             const m = document.getElementById(id); 
-            m.classList.toggle('hidden'); 
-            m.classList.toggle('flex'); 
+            m.classList.toggle('hidden'); m.classList.toggle('flex'); 
         }
         function openListView() { toggleModal('listModal'); }
-        
         function closeRequestModal() { 
             const m = document.getElementById('requestModal');
             m.classList.add('hidden'); 
             m.classList.remove('flex'); 
             resetSearch(); 
         }
-        
         function resetSearch() { 
             document.getElementById('movieSearch').value = ''; 
             document.getElementById('searchContainer').classList.remove('hidden'); 
@@ -655,13 +677,11 @@
             document.getElementById('drillDownContainer').classList.add('hidden'); 
             document.getElementById('results').classList.add('hidden'); 
             document.getElementById('statusMsg').classList.add('hidden'); 
+            document.getElementById('successActionArea').classList.add('hidden');
         }
         function backToSeasons() { if(selectedShow) startTvFlow(selectedShow.id, selectedShow.title, selectedShow.year); }
-        
         function cycleViewMode() { 
-            if (currentViewMode === 'MEDIA') currentViewMode = 'ACTORS';
-            else if (currentViewMode === 'ACTORS') currentViewMode = 'CUSTOM';
-            else currentViewMode = 'MEDIA';
+            currentViewMode = currentViewMode === 'MEDIA' ? 'ACTORS' : currentViewMode === 'ACTORS' ? 'CUSTOM' : 'MEDIA';
             renderRequests(); 
         }
 
@@ -670,36 +690,34 @@
             const dlList = document.getElementById('downloaderTaskList');
             const toggleBtn = document.getElementById('toggleActorBtn');
             const data = globalRequests;
-            
-            let filteredData = [];
+            let filtered = [];
             if (currentViewMode === 'MEDIA') {
-                filteredData = data.filter(req => !req.title.endsWith('- PERSON') && !req.title.endsWith('- CUSTOM'));
+                filtered = data.filter(req => !req.title.endsWith('- PERSON') && !req.title.endsWith('- CUSTOM'));
                 toggleBtn.innerText = "View Favorite Actors";
             } else if (currentViewMode === 'ACTORS') {
-                filteredData = data.filter(req => req.title.endsWith('- PERSON'));
-                toggleBtn.innerText = "View Custom Requests (Books/Comics)";
+                filtered = data.filter(req => req.title.endsWith('- PERSON'));
+                toggleBtn.innerText = "View Custom Requests";
             } else {
-                filteredData = data.filter(req => req.title.endsWith('- CUSTOM'));
-                toggleBtn.innerText = "View Standard Media Queue";
+                filtered = data.filter(req => req.title.endsWith('- CUSTOM'));
+                toggleBtn.innerText = "View Media Queue";
             }
             
-            reqList.innerHTML = filteredData.length === 0 
-                ? `<li class="text-zinc-500 italic text-center text-xs py-10">${currentViewMode === 'ACTORS' ? 'No favorite actors added yet.' : currentViewMode === 'CUSTOM' ? 'No custom requests added yet.' : 'Queue is empty.'}</li>` 
-                : filteredData.map(req => `<li class="flex justify-between items-center bg-zinc-800/40 p-3 rounded-xl border border-zinc-700/50 text-[11px] shadow-sm">
-                    <span class="${req.dl_status === 'downloading' ? 'text-purple-400' : ''}">${req.title}</span>
-                    <button onclick="removeReq(${req.id})" class="text-red-500/80 hover:text-red-400 px-2 font-bold transition-colors">✕</button>
+            reqList.innerHTML = filtered.length === 0 ? `<li class="text-zinc-500 italic text-center text-xs py-10">Queue is empty.</li>` : 
+                filtered.map(req => `<li class="flex flex-col gap-2 bg-zinc-800/40 p-3 rounded-xl border border-zinc-700/50 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="${req.dl_status === 'downloading' ? 'text-purple-400' : 'text-[11px]'}">${req.title}</span>
+                        <button onclick="removeReq('${req.firebaseId}')" class="text-red-500/80 hover:text-red-400 px-2 font-bold transition-colors">✕</button>
+                    </div>
+                    ${(currentViewMode === 'MEDIA' || currentViewMode === 'CUSTOM') ? `<button onclick="openTracker('${req.title.replace(/'/g, "\\'")}')" class="w-full py-1.5 bg-blue-600/10 hover:bg-blue-600/30 border border-blue-500/30 rounded-lg text-[9px] text-blue-400 uppercase tracking-widest transition-all">Track This Item</button>` : ''}
                   </li>`).join('');
             
-            // Downloader lists both MEDIA and CUSTOM so you can check off downloaded books/comics
             const dlData = data.filter(req => !req.title.endsWith('- PERSON'));
-            dlList.innerHTML = dlData.length === 0
-                ? `<li class="text-zinc-500 italic text-center text-xs py-10">No pending downloads.</li>`
-                : dlData.map(req => {
+            dlList.innerHTML = dlData.map(req => {
                 const isDL = req.dl_status === 'downloading';
                 return `<li class="flex justify-between items-center ${isDL ? 'bg-purple-900/20 border-purple-700/50' : 'bg-zinc-800/40 border-zinc-700/50'} p-3 rounded-xl border text-[11px] shadow-sm transition-all">
-                    <span class="${isDL ? 'text-purple-300 line-through opacity-70' : ''}">${req.title}</span>
+                    <span class="${isDL ? 'text-purple-300 opacity-70' : ''}">${req.title}</span>
                     <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" class="hidden" ${isDL ? 'checked' : ''} onchange="toggleDownloadState(${req.id})">
+                        <input type="checkbox" class="hidden" ${isDL ? 'checked' : ''} onchange="toggleDownloadState('${req.firebaseId}', '${req.dl_status}')">
                         <div class="w-5 h-5 rounded border ${isDL ? 'bg-purple-600 border-purple-500' : 'bg-zinc-900 border-zinc-600'} flex items-center justify-center transition-colors">
                             ${isDL ? '✓' : ''}
                         </div>
@@ -709,36 +727,47 @@
             if(adminMode) {
                 document.getElementById('adminListControls').classList.remove('hidden');
                 document.getElementById('adminControls').classList.remove('hidden');
-                document.getElementById('adminBtn').innerText = "ADMIN ACTIVE";
-                document.getElementById('adminBtn').classList.add('text-emerald-500', 'font-bold');
+                const adminBtn = document.getElementById('adminBtn');
+                adminBtn.innerText = "ADMIN ACTIVE";
+                adminBtn.classList.add('text-emerald-500', 'font-bold');
             }
         }
 
-        async function toggleDownloadState(id) {
-            const appId = "taran-portal"; 
-            const req = globalRequests.find(r => r.id === id);
-            if (req && currentUser) {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', id.toString());
-                await updateDoc(docRef, { dl_status: req.dl_status === 'downloading' ? 'pending' : 'downloading' });
-            }
+        async function toggleDownloadState(fid, current) {
+            if (currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', fid), { dl_status: current === 'downloading' ? 'pending' : 'downloading' });
         }
 
         async function verifyAdmin() { 
             const pass = await showCustomDialog('prompt', 'Enter Admin Code:', 'Password...');
-            if (pass === ADMIN_PASS) { adminMode = true; renderRequests(); }
-            else if (pass !== null) await showCustomDialog('alert', 'Incorrect security code.');
+            if (pass === null) return; 
+            if (pass === ADMIN_PASS) { 
+                adminMode = true; 
+                document.getElementById('adminControls').classList.remove('hidden');
+                const adminBtn = document.getElementById('adminBtn');
+                adminBtn.innerText = "ADMIN ACTIVE";
+                adminBtn.classList.add('text-emerald-500', 'font-bold');
+                const listControls = document.getElementById('adminListControls');
+                if (listControls) listControls.classList.remove('hidden');
+                renderRequests(); 
+            } else { await showCustomDialog('alert', 'Incorrect security code provided.'); }
         }
         
-        async function removeReq(id) { 
-            const appId = "taran-portal"; 
-            if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', id.toString()));
-        }
+        async function removeReq(fid) { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', fid)); }
 
         async function clearAllRequests() { 
-            const appId = "taran-portal"; 
-            if(currentUser && await showCustomDialog('confirm', 'Clear all requests?')) { 
-                for (const req of globalRequests) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', req.id.toString()));
-            } 
+            if(!currentUser) return;
+            const confirmed = await showCustomDialog('confirm', 'Are you sure you want to clear the entire request queue?');
+            if(confirmed) { for (const req of globalRequests) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mediaRequests', req.firebaseId)); } 
+        }
+
+        function toggleCustomRequest() {
+            document.getElementById('searchContainer').classList.toggle('hidden');
+            document.getElementById('customRequestContainer').classList.toggle('hidden');
+        }
+
+        async function submitCustomItem() {
+            const val = document.getElementById('customItemInput').value.trim();
+            if (val) { await runVerification(val, "", "", "CUSTOM"); document.getElementById('customItemInput').value = ''; }
         }
     </script>
 </body>
